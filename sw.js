@@ -3,7 +3,6 @@ const urlsToCache = [
   '/my-notes-app/',
   '/my-notes-app/index.html',
   '/my-notes-app/manifest.json',
-  '/my-notes-app/fontawesome.css',
   '/my-notes-app/icon-192.png',
   '/my-notes-app/icon-512.png'
 ];
