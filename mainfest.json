@@ -1,10 +1,22 @@
 {
   "name": "मेरा नोट्स ऐप",
   "short_name": "नोट्स",
-  "description": "ऑफलाइन नोट्स ऐप",
+  "description": "ऑफलाइन नोट्स ऐप - 1 क्लिक पेस्ट के साथ",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#ffd966",
   "background_color": "#f0ede8",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
