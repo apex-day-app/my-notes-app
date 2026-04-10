@@ -1,8 +1,9 @@
 {
   "name": "मेरा नोट्स ऐप",
   "short_name": "नोट्स",
-  "description": "ऑफलाइन नोट्स ऐप - 1 क्लिक पेस्ट के साथ",
-  "start_url": "/",
+  "description": "ऑफलाइन नोट्स ऐप",
+  "start_url": "/my-notes-app/",
+  "scope": "/my-notes-app/",
   "display": "standalone",
   "theme_color": "#ffd966",
   "background_color": "#f0ede8",
