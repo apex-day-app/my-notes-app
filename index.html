@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>नोट्स - फोल्डर</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="fontawesome.css">
+    <style>
+        /* COMMENT 1 : RESET AND BASE STYLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #f0ede8;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            padding: 8px;
+            min-height: 100vh;
+        }
+        .app {
+            max-width: 550px;
+            margin: 0 auto;
+            background: transparent;
+            overflow: visible;
+        }
+        .folder-scroll {
+            background: #e5e0d8;
+            padding: 6px 12px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 20px;
+            scrollbar-width: thin;
+        }
+        .folder-item {
+            display: inline-flex;
+            align-items: center;
+            background: transparent;
+            padding: 2px 0;
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #3a3229;
+            cursor: pointer;
+        }
+        .folder-item.active {
+            font-weight: 600;
+            color: #1a1a1a;
+            border-bottom: 1.5px solid #1a1a1a;
+            padding-bottom: 2px;
+        }
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .note-item {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #e8e0d5;
+            padding: 12px 14px;
+            cursor: pointer;
+        }
+        .note-item.empty-note {
+            background: #fefaf5;
+            border: 1px dashed #d4c4b0;
+        }
+        .note-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c241a;
+            margin-bottom: 6px;
+        }
+        .note-preview {
+            font-size: 0.7rem;
+            color: #6b5340;
+            line-height: 1.35;
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+            border-left: 2px solid #ffe0b5;
+            padding-left: 10px;
+        }
+        .note-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        .note-footer button {
+            background: #f7f3ec;
+            border: none;
+            font-size: 0.7rem;
+            color: #b97f44;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .fullscreen-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .fullscreen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        .fullscreen-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #8b6946;
+        }
+        .fullscreen-header input {
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            width: 70%;
+            outline: none;
+            border-bottom: 1px solid #ddd;
+            padding: 4px 0;
+        }
+        .modal-mask {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: white;
+            width: 85%;
+            max-width: 350px;
+            border-radius: 28px;
+            padding: 20px;
+        }
+        .modal-card input, .modal-card textarea {
+            width: 100%;
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background: #2c3e2f;
+            color: white;
+            padding: 5px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            z-index: 1100;
+        }
+        .save-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 0.6rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div id="foldersList" class="folder-scroll"></div>
+    <div class="notes-container">
+        <div id="notesListArea" class="notes-list"></div>
+    </div>
+</div>
+<div class="save-hint">💾 Ctrl+S से सेव</div>
+
+<script>
+    // PWA OFFLINE READY NOTES APP
+    let folders = [];
+    let notes = [];
+    let currentFolderId = null;
+
+    function getEmptyNoteId(folderId) { return 'empty_' + folderId; }
+    function isEmptyNote(note) { return note.id && note.id.toString().startsWith('empty_'); }
+
+    function ensureEmptyNoteForAllFolders() {
+        folders.forEach(folder => {
+            const emptyId = getEmptyNoteId(folder.id);
+            const existingEmpty = notes.find(n => n.id === emptyId);
+            if (!existingEmpty) {
+                notes.push({ id: emptyId, folderId: folder.id, title: "नया नोट", content: "", isEmpty: true });
+            }
+        });
+        notes = notes.filter(note => {
+            if (note.id && note.id.toString().startsWith('empty_')) {
+                const folderId = note.id.toString().replace('empty_', '');
+                return folders.some(f => f.id === folderId);
+            }
+            return true;
+        });
+    }
+
+    function loadFromLocal() {
+        const rawFolders = localStorage.getItem('pwa_notes_folders');
+        const rawNotes = localStorage.getItem('pwa_notes_notes');
+        if(rawFolders) folders = JSON.parse(rawFolders);
+        else folders = [{ id: 'f1', name: 'मुख्य' }];
+        if(rawNotes) notes = JSON.parse(rawNotes);
+        else notes = [];
+        if(folders.length && !currentFolderId) currentFolderId = folders[0].id;
+        else if(folders.length === 0) {
+            folders.push({ id: 'f1', name: 'मुख्य' });
+            currentFolderId = 'f1';
+        }
+        if(!folders.find(f => f.id === currentFolderId)) currentFolderId = folders[0]?.id;
+        ensureEmptyNoteForAllFolders();
+        saveToLocal();
+    }
+    
+    function saveToLocal() {
+        localStorage.setItem('pwa_notes_folders', JSON.stringify(folders));
+        localStorage.setItem('pwa_notes_notes', JSON.stringify(notes));
+    }
+
+    function escapeHtml(str) {
+        if(!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function showToast(msg) {
+        let t = document.querySelector('.toast');
+        if(t) t.remove();
+        let div = document.createElement('div');
+        div.className = 'toast';
+        div.innerText = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 1600);
+    }
+
+    function renderFolders() {
+        const container = document.getElementById('foldersList');
+        container.innerHTML = '';
+        folders.forEach(folder => {
+            const folderSpan = document.createElement('span');
+            folderSpan.className = `folder-item ${currentFolderId === folder.id ? 'active' : ''}`;
+            folderSpan.innerText = folder.name;
+            folderSpan.addEventListener('click', () => {
+                currentFolderId = folder.id;
+                fullRender();
+            });
+            container.appendChild(folderSpan);
+        });
+        const addBtn = document.createElement('span');
+        addBtn.innerText = '+';
+        addBtn.style.cssText = 'display: inline-flex; align-items: center; justify-content: center; background: transparent; padding: 2px 8px; font-size: 1rem; cursor: pointer; color: #5c472f; font-weight: 600;';
+        addBtn.addEventListener('click', () => { let name = prompt("नए फोल्डर का नाम"); if(name && name.trim()) { folders.push({ id: 'f_' + Date.now(), name: name.trim() }); currentFolderId = folders[folders.length-1].id; ensureEmptyNoteForAllFolders(); saveToLocal(); fullRender(); showToast("नया फोल्डर"); } });
+        container.appendChild(addBtn);
+    }
+
+    function renderNotes() {
+        const container = document.getElementById('notesListArea');
+        let folderNotes = notes.filter(n => n.folderId === currentFolderId);
+        folderNotes.sort((a, b) => {
+            if (isEmptyNote(a) && !isEmptyNote(b)) return -1;
+            if (!isEmptyNote(a) && isEmptyNote(b)) return 1;
+            if (!isEmptyNote(a) && !isEmptyNote(b)) {
+                const timeA = parseInt(a.id.split('_')[0]) || 0;
+                const timeB = parseInt(b.id.split('_')[0]) || 0;
+                return timeB - timeA;
+            }
+            return 0;
+        });
+        container.innerHTML = '';
+        folderNotes.forEach(note => {
+            const isEmpty = isEmptyNote(note);
+            const card = document.createElement('div');
+            card.className = `note-item ${isEmpty ? 'empty-note' : ''}`;
+            if (isEmpty) {
+                const uid = note.id;
+                card.innerHTML = `<div style="margin-bottom:8px;">📝 नया नोट</div>
+                    <input type="text" id="title_${uid}" placeholder="शीर्षक" style="width:100%; padding:8px; border-radius:12px; border:1px solid #d4c4b0; margin-bottom:8px;">
+                    <textarea id="text_${uid}" placeholder="लिखें या Ctrl+V... (Ctrl+Enter से सेव)" style="width:100%; min-height:80px; padding:8px; border-radius:12px; border:1px solid #d4c4b0; margin-bottom:8px;"></textarea>
+                    <button class="save-empty" data-id="${uid}" style="background:#ffd966; border:none; padding:6px 16px; border-radius:30px; cursor:pointer;"><i class="fas fa-save"></i> सेव</button>`;
+                setTimeout(() => {
+                    const ta = document.getElementById(`text_${uid}`);
+                    const ti = document.getElementById(`title_${uid}`);
+                    if(ta) ta.addEventListener('keydown', (e) => { if((e.ctrlKey||e.metaKey) && e.key==='Enter') { e.preventDefault(); document.querySelector(`.save-empty[data-id="${uid}"]`).click(); } });
+                    if(ti) ti.addEventListener('keydown', (e) => { if((e.ctrlKey||e.metaKey) && e.key==='Enter') { e.preventDefault(); document.querySelector(`.save-empty[data-id="${uid}"]`).click(); } });
+                }, 10);
+            } else {
+                let preview = "";
+                if(note.content) {
+                    const lines = note.content.split(/\r?\n/);
+                    if(lines.length === 1) preview = lines[0].substring(0,70);
+                    else if(lines.length >= 2) preview = (lines[0]+" "+lines[1]).substring(0,75);
+                    else preview = note.content.substring(0,70);
+                    if(preview.length>72) preview = preview.slice(0,70)+"...";
+                }
+                card.innerHTML = `<div class="note-title">${escapeHtml(note.title)}</div>
+                    <div class="note-preview">${escapeHtml(preview)}</div>
+                    <div class="note-footer">
+                        <button class="copy-note" data-id="${note.id}"><i class="fas fa-copy"></i> कॉपी</button>
+                        <button class="edit-note" data-id="${note.id}"><i class="fas fa-edit"></i></button>
+                        <button class="delete-note" data-id="${note.id}"><i class="fas fa-trash"></i></button>
+                    </div>`;
+                card.addEventListener('click', (e) => {
+                    if(e.target.closest('.copy-note') || e.target.closest('.edit-note') || e.target.closest('.delete-note')) return;
+                    openFullscreen(note);
+                });
+            }
+            container.appendChild(card);
+        });
+        // Event handlers
+        document.querySelectorAll('.save-empty').forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.getAttribute('data-id');
+                const found = notes.find(n => n.id === id);
+                if(found && isEmptyNote(found)) {
+                    const titleVal = document.getElementById(`title_${id}`).value.trim();
+                    const contentVal = document.getElementById(`text_${id}`).value.trim();
+                    if(contentVal) {
+                        const finalTitle = titleVal || contentVal.split(/\r?\n/)[0].substring(0,40) || "नोट";
+                        notes.push({ id: Date.now()+'_'+Math.random(), folderId: currentFolderId, title: finalTitle, content: contentVal });
+                        saveToLocal();
+                        document.getElementById(`title_${id}`).value = '';
+                        document.getElementById(`text_${id}`).value = '';
+                        renderNotes();
+                        showToast("✅ नोट सेव (टॉप पर)");
+                    } else showToast("कुछ लिखें");
+                }
+            };
+        });
+        document.querySelectorAll('.copy-note').forEach(btn => {
+            btn.onclick = (e) => { e.stopPropagation(); const n = notes.find(n=>n.id===btn.getAttribute('data-id')); if(n?.content) { navigator.clipboard.writeText(n.content); showToast("कॉपी"); } };
+        });
+        document.querySelectorAll('.edit-note').forEach(btn => {
+            btn.onclick = (e) => { e.stopPropagation(); const n = notes.find(n=>n.id===btn.getAttribute('data-id')); if(n) openEditModal(n); };
+        });
+        document.querySelectorAll('.delete-note').forEach(btn => {
+            btn.onclick = (e) => { e.stopPropagation(); const id = btn.getAttribute('data-id'); if(confirm("हटाएं?")) { notes = notes.filter(n=>n.id!==id); saveToLocal(); renderNotes(); showToast("हटा दिया"); } };
+        });
+    }
+
+    function openFullscreen(note) {
+        const div = document.createElement('div');
+        div.className = 'fullscreen-modal';
+        div.innerHTML = `<div class="fullscreen-header"><input id="fsTitle" value="${escapeHtml(note.title)}"><button class="fullscreen-close"><i class="fas fa-times"></i></button></div>
+            <div id="fsContent" contenteditable="true" style="flex:1; font-size:1rem; line-height:1.6; outline:none; white-space:pre-wrap;">${escapeHtml(note.content)}</div>
+            <div style="padding:12px; text-align:center; font-size:0.7rem;">💡 Ctrl+S या Ctrl+Enter से सेव</div>`;
+        document.body.appendChild(div);
+        document.body.style.overflow = 'hidden';
+        const close = div.querySelector('.fullscreen-close');
+        const titleInp = div.querySelector('#fsTitle');
+        const contentDiv = div.querySelector('#fsContent');
+        const save = () => {
+            note.title = titleInp.value.trim() || "नोट";
+            note.content = contentDiv.innerText;
+            saveToLocal();
+            renderNotes();
+            div.remove();
+            document.body.style.overflow = '';
+            showToast("सेव");
+        };
+        close.onclick = () => { div.remove(); document.body.style.overflow = ''; };
+        contentDiv.addEventListener('keydown', (e) => { if((e.ctrlKey||e.metaKey) && (e.key==='Enter'||e.key==='s')) { e.preventDefault(); save(); } });
+        titleInp.addEventListener('keydown', (e) => { if((e.ctrlKey||e.metaKey) && (e.key==='Enter'||e.key==='s')) { e.preventDefault(); save(); } });
+        document.addEventListener('keydown', function ctrlS(e) { if((e.ctrlKey||e.metaKey) && e.key==='s') { e.preventDefault(); if(document.body.contains(div)) save(); document.removeEventListener('keydown', ctrlS); } });
+    }
+
+    function openEditModal(note) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-mask';
+        modal.innerHTML = `<div class="modal-card"><h3>संपादित करें</h3><input id="editTitle" value="${escapeHtml(note.title)}"><textarea id="editContent" rows="4">${escapeHtml(note.content)}</textarea><div class="modal-actions"><button id="saveEdit">सेव</button><button id="cancelEdit">रद्द</button></div></div>`;
+        document.body.appendChild(modal);
+        document.getElementById('saveEdit').onclick = () => { note.title = document.getElementById('editTitle').value.trim() || "नोट"; note.content = document.getElementById('editContent').value; saveToLocal(); renderNotes(); modal.remove(); showToast("अपडेट"); };
+        document.getElementById('cancelEdit').onclick = () => modal.remove();
+    }
+
+    function fullRender() { renderFolders(); renderNotes(); }
+
+    // Global Ctrl+S for empty note
+    document.addEventListener('keydown', (e) => {
+        if((e.ctrlKey||e.metaKey) && e.key==='s') {
+            e.preventDefault();
+            const active = document.activeElement;
+            if(active && active.id && active.id.startsWith('text_')) {
+                const id = active.id.replace('text_', '');
+                const btn = document.querySelector(`.save-empty[data-id="${id}"]`);
+                if(btn) btn.click();
+            }
+        }
+    });
+
+    loadFromLocal();
+    fullRender();
+</script>
+</body>
+</html>
