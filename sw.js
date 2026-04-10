@@ -1,11 +1,11 @@
 const CACHE_NAME = 'notes-pwa-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/fontawesome.css',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/my-notes-app/',
+  '/my-notes-app/index.html',
+  '/my-notes-app/manifest.json',
+  '/my-notes-app/fontawesome.css',
+  '/my-notes-app/icon-192.png',
+  '/my-notes-app/icon-512.png'
 ];
 
 self.addEventListener('install', event => {
@@ -14,6 +14,7 @@ self.addEventListener('install', event => {
   );
 });
 
+// ✅ YEH FETCH HANDLER JAROORI HAI
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => response || fetch(event.request))
