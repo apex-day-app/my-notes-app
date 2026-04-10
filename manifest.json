@@ -1,6 +1,6 @@
 {
-  "name": "मेरा नोट्स ऐप",
-  "short_name": "नोट्स",
+  "name": "Notes App",
+  "short_name": "Notes",
   "start_url": "/my-notes-app/",
   "scope": "/my-notes-app/",
   "display": "standalone",
@@ -8,12 +8,12 @@
   "background_color": "#f0ede8",
   "icons": [
     {
-      "src": "/my-notes-app/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/my-notes-app/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
