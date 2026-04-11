@@ -2,9 +2,7 @@ const CACHE_NAME = 'notes-v1';
 const urlsToCache = [
   '/my-notes-app/',
   '/my-notes-app/index.html',
-  '/my-notes-app/manifest.json',
-  '/my-notes-app/icon-192.png',
-  '/my-notes-app/icon-512.png'
+  '/my-notes-app/manifest.json'
 ];
 
 self.addEventListener('install', event => {
