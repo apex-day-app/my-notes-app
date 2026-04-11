@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Notes App</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #f0ede8;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            padding: 8px;
+            min-height: 100vh;
+        }
+        .app {
+            max-width: 550px;
+            margin: 0 auto;
+            background: transparent;
+            overflow: visible;
+        }
+        .folder-scroll {
+            background: #e5e0d8;
+            padding: 6px 12px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 20px;
+            scrollbar-width: thin;
+        }
+        .folder-item {
+            display: inline-flex;
+            align-items: center;
+            background: transparent;
+            padding: 2px 0;
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #3a3229;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+        }
+        .folder-item.active {
+            font-weight: 600;
+            color: #1a1a1a;
+            border-bottom: 1.5px solid #1a1a1a;
+            padding-bottom: 2px;
+        }
+        .notes-container {
+            padding: 0;
+        }
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .note-item {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #e8e0d5;
+            padding: 12px 14px;
+            cursor: pointer;
+        }
+        .note-item.empty-note {
+            background: #fefaf5;
+            border: 1px dashed #d4c4b0;
+        }
+        .note-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c241a;
+            margin-bottom: 6px;
+        }
+        .note-preview {
+            font-size: 0.7rem;
+            color: #6b5340;
+            line-height: 1.35;
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+            border-left: 2px solid #ffe0b5;
+            padding-left: 10px;
+        }
+        .note-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        .note-footer button {
+            background: none;
+            border: none;
+            font-size: 0.7rem;
+            color: #b97f44;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 30px;
+            cursor: pointer;
+            background: #f7f3ec;
+        }
+        textarea, input, button {
+            font-size: 16px;
+            touch-action: manipulation;
+        }
+        .fullscreen-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .fullscreen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        .fullscreen-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #8b6946;
+        }
+        .fullscreen-header input {
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            width: 70%;
+            outline: none;
+            border-bottom: 1px solid #ddd;
+            padding: 4px 0;
+        }
+        .fullscreen-header input:focus {
+            border-bottom-color: #ffd966;
+        }
+        .modal-mask {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: white;
+            width: 85%;
+            max-width: 350px;
+            border-radius: 28px;
+            padding: 20px;
+        }
+        .modal-card h3 { font-size: 1rem; margin-bottom: 12px; }
+        .modal-card input, .modal-card textarea {
+            width: 100%;
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+        .modal-actions button {
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .toast {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background: #2c3e2f;
+            color: white;
+            padding: 5px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            z-index: 1100;
+        }
+        .save-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 0.6rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        /* SVG Icons - Works 100% offline, no external files needed! */
+        .icon {
+            width: 14px;
+            height: 14px;
+            display: inline-block;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .icon-save { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z'/%3E%3C/svg%3E"); }
+        .icon-paste { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M19 2h-4.18C14.4.84 13.3 0 12 0S9.6.84 9.18 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z'/%3E%3C/svg%3E"); }
+        .icon-copy { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z'/%3E%3C/svg%3E"); }
+        .icon-edit { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E"); }
+        .icon-delete { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E"); }
+        .icon-folder { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%233a3229' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'/%3E%3C/svg%3E"); }
+        .icon-plus { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%235c472f' viewBox='0 0 24 24'%3E%3Cpath d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E"); }
+        .icon-close { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%238b6946' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E"); }
+        
+        button .icon, .note-footer button .icon {
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .folder-item::before {
+            content: '';
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%233a3229' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'/%3E%3C/svg%3E");
+            background-size: contain;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div id="foldersList" class="folder-scroll"></div>
+    <div class="notes-container">
+        <div id="notesListArea" class="notes-list"></div>
+    </div>
+</div>
+<div class="save-hint">💾 Ctrl+S to save</div>
+
+<script>
+    let folders = [];
+    let notes = [];
+    let currentFolderId = null;
+
+    function getEmptyNoteId(folderId) { return 'empty_' + folderId; }
+    function isEmptyNote(note) { return note.id && note.id.toString().startsWith('empty_'); }
+
+    function ensureEmptyNoteForAllFolders() {
+        folders.forEach(folder => {
+            const emptyId = getEmptyNoteId(folder.id);
+            const existingEmpty = notes.find(n => n.id === emptyId);
+            if (!existingEmpty) {
+                notes.push({ id: emptyId, folderId: folder.id, title: "New Note", content: "", isEmpty: true });
+            }
+        });
+        notes = notes.filter(note => {
+            if (note.id && note.id.toString().startsWith('empty_')) {
+                const folderId = note.id.toString().replace('empty_', '');
+                return folders.some(f => f.id === folderId);
+            }
+            return true;
+        });
+    }
+
+    function loadFromLocal() {
+        const rawFolders = localStorage.getItem('notes_folders');
+        const rawNotes = localStorage.getItem('notes_notes');
+        if(rawFolders) folders = JSON.parse(rawFolders);
+        else folders = [{ id: 'f1', name: 'Main' }];
+        if(rawNotes) notes = JSON.parse(rawNotes);
+        else notes = [];
+        if(folders.length && !currentFolderId) currentFolderId = folders[0].id;
+        else if(folders.length === 0) {
+            folders.push({ id: 'f1', name: 'Main' });
+            currentFolderId = 'f1';
+        }
+        if(!folders.find(f => f.id === currentFolderId)) currentFolderId = folders[0]?.id;
+        ensureEmptyNoteForAllFolders();
+        saveToLocal();
+    }
+    
+    function saveToLocal() {
+        localStorage.setItem('notes_folders', JSON.stringify(folders));
+        localStorage.setItem('notes_notes', JSON.stringify(notes));
+    }
+
+    function escapeHtml(str) {
+        if(!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function showToast(msg) {
+        let t = document.querySelector('.toast');
+        if(t) t.remove();
+        let div = document.createElement('div');
+        div.className = 'toast';
+        div.innerText = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 1600);
+    }
+
+    function renderFolders() {
+        const container = document.getElementById('foldersList');
+        container.innerHTML = '';
+        folders.forEach(folder => {
+            const folderSpan = document.createElement('span');
+            folderSpan.className = `folder-item ${currentFolderId === folder.id ? 'active' : ''}`;
+            folderSpan.innerText = folder.name;
+            folderSpan.addEventListener('click', () => {
+                currentFolderId = folder.id;
+                fullRender();
+            });
+            container.appendChild(folderSpan);
+        });
+        const addBtn = document.createElement('span');
+        addBtn.innerHTML = '<span class="icon icon-plus" style="margin-right:0;"></span>';
+        addBtn.style.cssText = 'display: inline-flex; align-items: center; justify-content: center; background: transparent; padding: 2px 8px; font-size: 1rem; cursor: pointer; color: #5c472f;';
+        addBtn.addEventListener('click', () => { let name = prompt("Enter folder name:"); if(name && name.trim()) { folders.push({ id: 'f_' + Date.now(), name: name.trim() }); currentFolderId = folders[folders.length-1].id; ensureEmptyNoteForAllFolders(); saveToLocal(); fullRender(); showToast("New folder created"); } });
+        container.appendChild(addBtn);
+    }
+
+    function renderNotes() {
+        const container = document.getElementById('notesListArea');
+        let folderNotes = notes.filter(n => n.folderId === currentFolderId);
+        folderNotes.sort((a, b) => {
+            if (isEmptyNote(a) && !isEmptyNote(b)) return -1;
+            if (!isEmptyNote(a) && isEmptyNote(b)) return 1;
+            if (!isEmptyNote(a) && !isEmptyNote(b)) {
+                const timeA = parseInt(a.id.split('_')[0]) || 0;
+                const timeB = parseInt(b.id.split('_')[0]) || 0;
+                return timeB - timeA;
+            }
+            return 0;
+        });
+        container.innerHTML = '';
+        folderNotes.forEach(note => {
+            const isEmpty = isEmptyNote(note);
+            const card = document.createElement('div');
+            card.className = `note-item ${isEmpty ? 'empty-note' : ''}`;
+            if (isEmpty) {
+                const uid = note.id;
+                card.innerHTML = `<div style="margin-bottom:8px;">📝 Write new note</div>
+                    <input type="text" id="title_${uid}" placeholder="Title (optional)" style="width:100%; padding:8px; border-radius:12px; border:1px solid #d4c4b0; margin-bottom:8px; font-size:16px;">
+                    <textarea id="text_${uid}" placeholder="Write here or press Ctrl+V to paste... (Ctrl+Enter to save)" style="width:100%; min-height:80px; padding:8px; border-radius:12px; border:1px solid #d4c4b0; margin-bottom:8px; font-size:16px;"></textarea>
+                    <div style="display:flex; gap:8px; justify-content:flex-end;">
+                        <button class="save-empty-btn" data-id="${uid}" style="background:#ffd966; border:none; padding:6px 16px; border-radius:30px; cursor:pointer;"><span class="icon icon-save"></span> Save</button>
+                        <button class="paste-empty-btn" data-id="${uid}" style="background:#e0d6c8; border:none; padding:6px 16px; border-radius:30px; cursor:pointer;"><span class="icon icon-paste"></span> Paste</button>
+                    </div>`;
+                setTimeout(() => {
+                    const ta = document.getElementById(`text_${uid}`);
+                    if(ta) ta.addEventListener('keydown', (e) => { if((e.ctrlKey||e.metaKey) && e.key==='Enter') { e.preventDefault(); document.querySelector(`.save-empty-btn[data-id="${uid}"]`).click(); } });
+                }, 10);
+            } else {
+                let preview = "";
+                if(note.content) {
+                    const lines = note.content.split(/\r?\n/);
+                    if(lines.length === 1) preview = lines[0].substring(0,70);
+                    else if(lines.length >= 2) preview = (lines[0]+" "+lines[1]).substring(0,75);
+                    else preview = note.content.substring(0,70);
+                    if(preview.length>72) preview = preview.slice(0,70)+"...";
+                }
+                card.innerHTML = `<div class="note-title"><span class="icon icon-folder" style="margin-right:6px;"></span> ${escapeHtml(note.title)}</div>
+                    <div class="note-preview">${escapeHtml(preview)}</div>
+                    <div class="note-footer">
+                        <button class="copy-note" data-id="${note.id}"><span class="icon icon-copy"></span> Copy</button>
+                        <button class="edit-note" data-id="${note.id}"><span class="icon icon-edit"></span> Edit</button>
+                        <button class="delete-note" data-id="${note.id}"><span class="icon icon-delete"></span> Delete</button>
+                    </div>`;
+                card.addEventListener('click', (e) => {
+                    if(e.target.closest('.copy-note') || e.target.closest('.edit-note') || e.target.closest('.delete-note')) return;
+                    openFullscreenNote(note);
+                });
+            }
+            container.appendChild(card);
+        });
+
+        document.querySelectorAll('.save-empty-btn').forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.getAttribute('data-id');
+                const found = notes.find(n => n.id === id);
+                if(found && isEmptyNote(found)) {
+                    const titleVal = document.getElementById(`title_${id}`).value.trim();
+                    const contentVal = document.getElementById(`text_${id}`).value.trim();
+                    if(contentVal) {
+                        const finalTitle = titleVal || contentVal.split(/\r?\n/)[0].substring(0,40) || "New Note";
+                        notes.push({ id: Date.now()+'_'+Math.random(), folderId: currentFolderId, title: finalTitle, content: contentVal });
+                        saveToLocal();
+                        document.getElementById(`title_${id}`).value = '';
+                        document.getElementById(`text_${id}`).value = '';
+                        renderNotes();
+                        showToast("✅ Note saved");
+                    } else showToast("Write or paste something");
+                }
+            };
+        });
+        
+        document.querySelectorAll('.paste-empty-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.getAttribute('data-id');
+                const textarea = document.getElementById(`text_${id}`);
+                if(textarea) {
+                    try {
+                        const text = await navigator.clipboard.readText();
+                        if(text && text.trim()) {
+                            textarea.value = text;
+                            textarea.focus();
+                            showToast("📋 Pasted");
+                        } else showToast("Clipboard empty");
+                    } catch(e) {
+                        showToast("Allow permission first, then try again");
+                    }
+                }
+            };
+        });
+        
+        document.querySelectorAll('.copy-note').forEach(btn => {
+            btn.onclick = (e) => { e.stopPropagation(); const n = notes.find(x=>x.id===btn.getAttribute('data-id')); if(n?.content){ navigator.clipboard.writeText(n.content); showToast("Copied"); } };
+        });
+        
+        document.querySelectorAll('.edit-note').forEach(btn => {
+            btn.onclick = (e) => { e.stopPropagation(); const n = notes.find(x=>x.id===btn.getAttribute('data-id')); if(n) openEditModal(n); };
+        });
+        
+        document.querySelectorAll('.delete-note').forEach(btn => {
+            btn.onclick = (e) => { e.stopPropagation(); const id = btn.getAttribute('data-id'); if(confirm("Delete note?")){ notes = notes.filter(x=>x.id!==id); saveToLocal(); renderNotes(); showToast("Note deleted"); } };
+        });
+    }
+
+    function openFullscreenNote(note) {
+        const div = document.createElement('div');
+        div.className = 'fullscreen-modal';
+        div.innerHTML = `<div class="fullscreen-header"><input id="fsTitle" value="${escapeHtml(note.title)}" placeholder="Title"><button class="fullscreen-close"><span class="icon icon-close"></span></button></div>
+            <div id="fsContent" contenteditable="true" style="flex:1; font-size:1rem; line-height:1.6; outline:none; white-space:pre-wrap; padding:8px 0;">${escapeHtml(note.content)}</div>
+            <div style="padding:12px; text-align:center; font-size:0.7rem; color:#888;">💡 Ctrl+S or Ctrl+Enter to save</div>`;
+        document.body.appendChild(div);
+        document.body.style.overflow = 'hidden';
+        const close = div.querySelector('.fullscreen-close');
+        const ti = div.querySelector('#fsTitle');
+        const cd = div.querySelector('#fsContent');
+        const saveFn = () => { note.title = ti.value.trim() || "Note"; note.content = cd.innerText; saveToLocal(); renderNotes(); div.remove(); document.body.style.overflow = ''; showToast("Note saved"); };
+        close.onclick = () => { div.remove(); document.body.style.overflow = ''; };
+        cd.addEventListener('keydown', (e) => { if((e.ctrlKey||e.metaKey) && (e.key==='Enter'||e.key==='s')) { e.preventDefault(); saveFn(); } });
+        ti.addEventListener('keydown', (e) => { if((e.ctrlKey||e.metaKey) && (e.key==='Enter'||e.key==='s')) { e.preventDefault(); saveFn(); } });
+    }
+
+    function openEditModal(note) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-mask';
+        modal.innerHTML = `<div class="modal-card"><h3><span class="icon icon-edit"></span> Edit Note</h3><input id="editTitle" value="${escapeHtml(note.title)}" placeholder="Title"><textarea id="editContent" rows="4" placeholder="Write your note...">${escapeHtml(note.content)}</textarea><div class="modal-actions"><button id="saveEdit" style="background:#ffd966;"><span class="icon icon-save"></span> Save</button><button id="cancelEdit" style="background:#e0d6c8;">Cancel</button></div></div>`;
+        document.body.appendChild(modal);
+        document.getElementById('saveEdit').onclick = () => { note.title = document.getElementById('editTitle').value.trim() || "Note"; note.content = document.getElementById('editContent').value; saveToLocal(); renderNotes(); modal.remove(); showToast("Updated"); };
+        document.getElementById('cancelEdit').onclick = () => modal.remove();
+    }
+
+    function fullRender() { renderFolders(); renderNotes(); }
+
+    document.addEventListener('keydown', (e) => {
+        if((e.ctrlKey||e.metaKey) && e.key==='s') {
+            e.preventDefault();
+            const active = document.activeElement;
+            if(active && active.id && active.id.startsWith('text_')) {
+                const id = active.id.replace('text_','');
+                const btn = document.querySelector(`.save-empty-btn[data-id="${id}"]`);
+                if(btn) btn.click();
+            }
+        }
+    });
+
+    loadFromLocal();
+    fullRender();
+</script>
+</body>
+</html>
