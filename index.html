@@ -4,47 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#f0ede8">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Notes App</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="preload" href="index.html" as="document">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            -webkit-transition: none !important;
-            transition: none !important;
         }
         body {
             background: #f0ede8;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             padding: 8px;
             min-height: 100vh;
-            touch-action: pan-x pan-y;
-            overscroll-behavior: none;
             width: 100%;
             height: 100%;
             overflow-y: auto;
-            transition: none !important;
         }
         .app {
             max-width: 550px;
             margin: 0 auto;
             background: transparent;
-            overflow: visible;
         }
         .folder-scroll {
             background: #e5e0d8;
-            padding: 6px 12px;
+            padding: 8px 12px;
             margin-bottom: 12px;
             overflow-x: auto;
             white-space: nowrap;
             display: flex;
             gap: 20px;
-            scrollbar-width: thin;
             border-radius: 30px;
         }
         .folder-item {
@@ -56,16 +47,12 @@
             font-weight: 500;
             color: #3a3229;
             cursor: pointer;
-            letter-spacing: 0.3px;
         }
         .folder-item.active {
             font-weight: 700;
             color: #1a1a1a;
             border-bottom: 2px solid #1a1a1a;
             padding-bottom: 4px;
-        }
-        .notes-container {
-            padding: 0;
         }
         .notes-list {
             display: flex;
@@ -84,44 +71,101 @@
             border: 1px dashed #d4c4b0;
             padding: 16px;
         }
-        .note-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #2c241a;
-            margin-bottom: 6px;
-        }
         .note-preview {
             font-size: 0.7rem;
             color: #6b5340;
             line-height: 1.35;
             white-space: pre-wrap;
-            margin-bottom: 10px;
+            margin-top: 8px;
             border-left: 2px solid #ffe0b5;
             padding-left: 10px;
         }
-        .note-footer {
+        
+        /* Title Bar with Icons */
+        .note-title-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .note-title-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c241a;
+        }
+        .note-actions {
             display: flex;
             gap: 8px;
-            justify-content: flex-end;
         }
-        .note-footer button, .icon-btn {
+        .note-actions button {
             background: none;
             border: none;
-            padding: 6px;
-            border-radius: 30px;
+            padding: 4px;
             cursor: pointer;
-            background: #f7f3ec;
+            border-radius: 20px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
         }
-        textarea, input, button, [contenteditable="true"] {
-            touch-action: manipulation;
+        
+        /* Empty Note Box */
+        .empty-note-container {
+            text-align: center;
+            padding: 10px;
+        }
+        .empty-note-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+        .empty-note-title-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #d4c4b0;
+            margin-bottom: 10px;
             font-size: 16px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: inherit;
         }
+        .empty-note-content-input {
+            width: 100%;
+            min-height: 90px;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #d4c4b0;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        .empty-note-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        .empty-note-actions button {
+            background: none;
+            border: none;
+            padding: 8px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .save-btn-icon {
+            background: #ffd966;
+            padding: 8px 16px;
+            border-radius: 30px;
+            gap: 6px;
+        }
+        .paste-btn-icon {
+            background: #e0d6c8;
+            padding: 8px 16px;
+            border-radius: 30px;
+            gap: 6px;
+        }
+        
+        /* Modal Styles */
         .fullscreen-modal {
             position: fixed;
             top: 0;
@@ -133,7 +177,6 @@
             display: flex;
             flex-direction: column;
             padding: 20px;
-            overflow-y: auto;
         }
         .fullscreen-header {
             display: flex;
@@ -143,15 +186,6 @@
             border-bottom: 1px solid #eee;
             margin-bottom: 20px;
         }
-        .fullscreen-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #8b6946;
-            padding: 8px;
-            border-radius: 30px;
-        }
         .fullscreen-header input {
             font-size: 1.2rem;
             font-weight: 600;
@@ -159,16 +193,18 @@
             background: transparent;
             width: 70%;
             outline: none;
-            border-bottom: 1px solid #ddd;
-            padding: 4px 0;
             font-family: inherit;
         }
-        .fullscreen-header input:focus {
-            border-bottom-color: #ffd966;
+        .fullscreen-close {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
         }
         .modal-mask {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
@@ -182,7 +218,6 @@
             border-radius: 28px;
             padding: 20px;
         }
-        .modal-card h3 { font-size: 1rem; margin-bottom: 12px; }
         .modal-card input, .modal-card textarea {
             width: 100%;
             margin: 8px 0;
@@ -190,7 +225,6 @@
             border-radius: 20px;
             border: 1px solid #ddd;
             font-family: inherit;
-            font-size: 0.8rem;
         }
         .modal-actions {
             display: flex;
@@ -202,7 +236,6 @@
             padding: 6px 16px;
             border-radius: 30px;
             border: none;
-            font-size: 0.75rem;
             cursor: pointer;
         }
         .toast {
@@ -225,67 +258,6 @@
             font-size: 0.6rem;
             padding: 4px 8px;
             border-radius: 20px;
-            pointer-events: none;
-            z-index: 999;
-        }
-        
-        /* New Empty Note Box Design */
-        .empty-note-container {
-            text-align: center;
-            padding: 20px;
-        }
-        .empty-note-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-            opacity: 0.6;
-        }
-        .empty-note-title-input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid #d4c4b0;
-            margin-bottom: 12px;
-            font-size: 16px;
-            font-family: inherit;
-            background: white;
-        }
-        .empty-note-content-input {
-            width: 100%;
-            min-height: 100px;
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid #d4c4b0;
-            margin-bottom: 12px;
-            font-size: 16px;
-            font-family: inherit;
-            background: white;
-            resize: vertical;
-        }
-        .empty-note-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-        .save-btn {
-            background: #ffd966;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .paste-btn {
-            background: #e0d6c8;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
         
         /* SVG Icons */
@@ -302,29 +274,9 @@
         .icon-copy { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z'/%3E%3C/svg%3E"); }
         .icon-edit { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E"); }
         .icon-delete { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E"); }
-        .icon-folder { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%233a3229' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'/%3E%3C/svg%3E"); }
         .icon-plus { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%235c472f' viewBox='0 0 24 24'%3E%3Cpath d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E"); }
         .icon-close { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%238b6946' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E"); }
         
-        .note-title-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .note-title-text {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #2c241a;
-        }
-        .note-actions {
-            display: flex;
-            gap: 6px;
-        }
-        .icon-small {
-            width: 16px;
-            height: 16px;
-        }
         .folder-item::before {
             content: '';
             display: inline-block;
@@ -343,7 +295,7 @@
         <div id="notesListArea" class="notes-list"></div>
     </div>
 </div>
-<div class="save-hint">💾 Ctrl+S</div>
+<div class="save-hint">Ctrl+S</div>
 
 <script>
     let folders = [];
@@ -378,10 +330,6 @@
         if(rawNotes) notes = JSON.parse(rawNotes);
         else notes = [];
         if(folders.length && !currentFolderId) currentFolderId = folders[0].id;
-        else if(folders.length === 0) {
-            folders.push({ id: 'f1', name: 'Main' });
-            currentFolderId = 'f1';
-        }
         if(!folders.find(f => f.id === currentFolderId)) currentFolderId = folders[0]?.id;
         ensureEmptyNoteForAllFolders();
         saveToLocal();
@@ -424,8 +372,8 @@
             container.appendChild(folderSpan);
         });
         const addBtn = document.createElement('span');
-        addBtn.innerHTML = '<span class="icon icon-plus" style="margin-right:0; width:18px; height:18px;"></span>';
-        addBtn.style.cssText = 'display: inline-flex; align-items: center; justify-content: center; background: transparent; padding: 4px 8px; cursor: pointer; color: #5c472f;';
+        addBtn.innerHTML = '<span class="icon icon-plus"></span>';
+        addBtn.style.cssText = 'display: inline-flex; align-items: center; justify-content: center; background: transparent; padding: 4px 8px; cursor: pointer;';
         addBtn.addEventListener('click', () => { let name = prompt("Folder name:"); if(name && name.trim()) { folders.push({ id: 'f_' + Date.now(), name: name.trim() }); currentFolderId = folders[folders.length-1].id; ensureEmptyNoteForAllFolders(); saveToLocal(); fullRender(); showToast("Folder created"); } });
         container.appendChild(addBtn);
     }
@@ -436,11 +384,6 @@
         folderNotes.sort((a, b) => {
             if (isEmptyNote(a) && !isEmptyNote(b)) return -1;
             if (!isEmptyNote(a) && isEmptyNote(b)) return 1;
-            if (!isEmptyNote(a) && !isEmptyNote(b)) {
-                const timeA = parseInt(a.id.split('_')[0]) || 0;
-                const timeB = parseInt(b.id.split('_')[0]) || 0;
-                return timeB - timeA;
-            }
             return 0;
         });
         container.innerHTML = '';
@@ -456,8 +399,8 @@
                         <input type="text" id="title_${uid}" placeholder="Title" class="empty-note-title-input">
                         <textarea id="text_${uid}" placeholder="Write note..." class="empty-note-content-input"></textarea>
                         <div class="empty-note-actions">
-                            <button class="paste-empty-btn" data-id="${uid}" class="paste-btn"><span class="icon icon-paste"></span> Paste</button>
-                            <button class="save-empty-btn" data-id="${uid}" class="save-btn"><span class="icon icon-save"></span> Save</button>
+                            <button class="paste-empty-btn" data-id="${uid}" class="paste-btn-icon"><span class="icon icon-paste"></span></button>
+                            <button class="save-empty-btn" data-id="${uid}" class="save-btn-icon"><span class="icon icon-save"></span></button>
                         </div>
                     </div>`;
                 setTimeout(() => {
@@ -467,19 +410,16 @@
             } else {
                 let preview = "";
                 if(note.content) {
-                    const lines = note.content.split(/\r?\n/);
-                    if(lines.length === 1) preview = lines[0].substring(0,60);
-                    else if(lines.length >= 2) preview = (lines[0]+" "+lines[1]).substring(0,65);
-                    else preview = note.content.substring(0,60);
-                    if(preview.length>62) preview = preview.slice(0,60)+"...";
+                    preview = note.content.substring(0, 60);
+                    if(preview.length > 57) preview = preview.slice(0, 55) + "...";
                 }
                 card.innerHTML = `
                     <div class="note-title-bar">
                         <span class="note-title-text">📄 ${escapeHtml(note.title)}</span>
                         <div class="note-actions">
-                            <button class="copy-note" data-id="${note.id}" style="background:none; padding:4px;"><span class="icon icon-copy icon-small"></span></button>
-                            <button class="edit-note" data-id="${note.id}" style="background:none; padding:4px;"><span class="icon icon-edit icon-small"></span></button>
-                            <button class="delete-note" data-id="${note.id}" style="background:none; padding:4px;"><span class="icon icon-delete icon-small"></span></button>
+                            <button class="copy-note" data-id="${note.id}"><span class="icon icon-copy"></span></button>
+                            <button class="edit-note" data-id="${note.id}"><span class="icon icon-edit"></span></button>
+                            <button class="delete-note" data-id="${note.id}"><span class="icon icon-delete"></span></button>
                         </div>
                     </div>
                     <div class="note-preview">${escapeHtml(preview)}</div>`;
@@ -563,7 +503,7 @@
     function openEditModal(note) {
         const modal = document.createElement('div');
         modal.className = 'modal-mask';
-        modal.innerHTML = `<div class="modal-card"><h3>✏️ Edit</h3><input id="editTitle" value="${escapeHtml(note.title)}" placeholder="Title"><textarea id="editContent" rows="4" placeholder="Note...">${escapeHtml(note.content)}</textarea><div class="modal-actions"><button id="saveEdit" style="background:#ffd966;"><span class="icon icon-save"></span> Save</button><button id="cancelEdit" style="background:#e0d6c8;">Cancel</button></div></div>`;
+        modal.innerHTML = `<div class="modal-card"><h3>✏️ Edit</h3><input id="editTitle" value="${escapeHtml(note.title)}" placeholder="Title"><textarea id="editContent" rows="4" placeholder="Note...">${escapeHtml(note.content)}</textarea><div class="modal-actions"><button id="saveEdit" style="background:#ffd966;"><span class="icon icon-save"></span></button><button id="cancelEdit" style="background:#e0d6c8;">Cancel</button></div></div>`;
         document.body.appendChild(modal);
         document.getElementById('saveEdit').onclick = () => { note.title = document.getElementById('editTitle').value.trim() || "Note"; note.content = document.getElementById('editContent').value; saveToLocal(); renderNotes(); modal.remove(); showToast("Updated"); };
         document.getElementById('cancelEdit').onclick = () => modal.remove();
