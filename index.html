@@ -5,253 +5,253 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Notes App</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="preload" href="index.html" as="document">
     <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-        touch-action: manipulation;
-    }
-    body {
-        background: #f0ede8;
-        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
-        padding: 8px;
-        min-height: 100vh;
-        touch-action: pan-x pan-y;
-        overscroll-behavior: none;
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        overflow-y: auto;
-    }
-    .app {
-        max-width: 550px;
-        margin: 0 auto;
-        background: transparent;
-        overflow: visible;
-    }
-    .folder-scroll {
-        background: #e5e0d8;
-        padding: 6px 12px;
-        margin-bottom: 12px;
-        overflow-x: auto;
-        white-space: nowrap;
-        display: flex;
-        gap: 20px;
-        scrollbar-width: thin;
-    }
-    .folder-item {
-        display: inline-flex;
-        align-items: center;
-        background: transparent;
-        padding: 2px 0;
-        font-size: 0.85rem;
-        font-weight: 400;
-        color: #3a3229;
-        cursor: pointer;
-        letter-spacing: 0.3px;
-    }
-    .folder-item.active {
-        font-weight: 600;
-        color: #1a1a1a;
-        border-bottom: 1.5px solid #1a1a1a;
-        padding-bottom: 2px;
-    }
-    .notes-container {
-        padding: 0;
-    }
-    .notes-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    .note-item {
-        background: #ffffff;
-        border-radius: 18px;
-        border: 1px solid #e8e0d5;
-        padding: 12px 14px;
-        cursor: pointer;
-    }
-    .note-item.empty-note {
-        background: #fefaf5;
-        border: 1px dashed #d4c4b0;
-    }
-    .note-title {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #2c241a;
-        margin-bottom: 6px;
-    }
-    .note-preview {
-        font-size: 0.7rem;
-        color: #6b5340;
-        line-height: 1.35;
-        white-space: pre-wrap;
-        margin-bottom: 10px;
-        border-left: 2px solid #ffe0b5;
-        padding-left: 10px;
-    }
-    .note-footer {
-        display: flex;
-        gap: 12px;
-        justify-content: flex-end;
-    }
-    .note-footer button {
-        background: none;
-        border: none;
-        font-size: 0.7rem;
-        color: #b97f44;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 8px;
-        border-radius: 30px;
-        cursor: pointer;
-        background: #f7f3ec;
-    }
-    textarea, input, button, [contenteditable="true"] {
-        touch-action: manipulation;
-        font-size: 16px;
-    }
-    .fullscreen-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #ffffff;
-        z-index: 2000;
-        display: flex;
-        flex-direction: column;
-        padding: 20px;
-        overflow-y: auto;
-    }
-    .fullscreen-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #eee;
-        margin-bottom: 20px;
-    }
-    .fullscreen-close {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #8b6946;
-    }
-    .fullscreen-header input {
-        font-size: 1.2rem;
-        font-weight: 600;
-        border: none;
-        background: transparent;
-        width: 70%;
-        outline: none;
-        border-bottom: 1px solid #ddd;
-        padding: 4px 0;
-    }
-    .fullscreen-header input:focus {
-        border-bottom-color: #ffd966;
-    }
-    .modal-mask {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    }
-    .modal-card {
-        background: white;
-        width: 85%;
-        max-width: 350px;
-        border-radius: 28px;
-        padding: 20px;
-    }
-    .modal-card h3 { font-size: 1rem; margin-bottom: 12px; }
-    .modal-card input, .modal-card textarea {
-        width: 100%;
-        margin: 8px 0;
-        padding: 8px 12px;
-        border-radius: 20px;
-        border: 1px solid #ddd;
-        font-family: inherit;
-        font-size: 0.8rem;
-    }
-    .modal-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        margin-top: 12px;
-    }
-    .modal-actions button {
-        padding: 6px 16px;
-        border-radius: 30px;
-        border: none;
-        font-size: 0.75rem;
-        cursor: pointer;
-    }
-    .toast {
-        position: fixed;
-        bottom: 15px;
-        left: 15px;
-        background: #2c3e2f;
-        color: white;
-        padding: 5px 14px;
-        border-radius: 40px;
-        font-size: 0.7rem;
-        z-index: 1100;
-    }
-    .save-hint {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(0,0,0,0.6);
-        color: white;
-        font-size: 0.6rem;
-        padding: 4px 8px;
-        border-radius: 20px;
-        pointer-events: none;
-        z-index: 999;
-    }
-    
-    /* SVG Icons */
-    .icon {
-        width: 14px;
-        height: 14px;
-        display: inline-block;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        margin-right: 4px;
-        vertical-align: middle;
-    }
-    .icon-save { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z'/%3E%3C/svg%3E"); }
-    .icon-paste { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M19 2h-4.18C14.4.84 13.3 0 12 0S9.6.84 9.18 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z'/%3E%3C/svg%3E"); }
-    .icon-copy { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z'/%3E%3C/svg%3E"); }
-    .icon-edit { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E"); }
-    .icon-delete { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E"); }
-    .icon-folder { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%233a3229' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'/%3E%3C/svg%3E"); }
-    .icon-plus { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%235c472f' viewBox='0 0 24 24'%3E%3Cpath d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E"); }
-    .icon-close { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%238b6946' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E"); }
-    
-    button .icon, .note-footer button .icon {
-        margin-right: 4px;
-        vertical-align: middle;
-    }
-    .folder-item::before {
-        content: '';
-        display: inline-block;
-        width: 14px;
-        height: 14px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%233a3229' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'/%3E%3C/svg%3E");
-        background-size: contain;
-        margin-right: 4px;
-    }
-</style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        body {
+            background: #f0ede8;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            padding: 8px;
+            min-height: 100vh;
+            touch-action: pan-x pan-y;
+            overscroll-behavior: none;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .app {
+            max-width: 550px;
+            margin: 0 auto;
+            background: transparent;
+            overflow: visible;
+        }
+        .folder-scroll {
+            background: #e5e0d8;
+            padding: 6px 12px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 20px;
+            scrollbar-width: thin;
+        }
+        .folder-item {
+            display: inline-flex;
+            align-items: center;
+            background: transparent;
+            padding: 2px 0;
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #3a3229;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+        }
+        .folder-item.active {
+            font-weight: 600;
+            color: #1a1a1a;
+            border-bottom: 1.5px solid #1a1a1a;
+            padding-bottom: 2px;
+        }
+        .notes-container {
+            padding: 0;
+        }
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .note-item {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #e8e0d5;
+            padding: 12px 14px;
+            cursor: pointer;
+        }
+        .note-item.empty-note {
+            background: #fefaf5;
+            border: 1px dashed #d4c4b0;
+        }
+        .note-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c241a;
+            margin-bottom: 6px;
+        }
+        .note-preview {
+            font-size: 0.7rem;
+            color: #6b5340;
+            line-height: 1.35;
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+            border-left: 2px solid #ffe0b5;
+            padding-left: 10px;
+        }
+        .note-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        .note-footer button {
+            background: none;
+            border: none;
+            font-size: 0.7rem;
+            color: #b97f44;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 30px;
+            cursor: pointer;
+            background: #f7f3ec;
+        }
+        textarea, input, button, [contenteditable="true"] {
+            touch-action: manipulation;
+            font-size: 16px;
+        }
+        .fullscreen-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .fullscreen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        .fullscreen-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #8b6946;
+        }
+        .fullscreen-header input {
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            width: 70%;
+            outline: none;
+            border-bottom: 1px solid #ddd;
+            padding: 4px 0;
+        }
+        .fullscreen-header input:focus {
+            border-bottom-color: #ffd966;
+        }
+        .modal-mask {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: white;
+            width: 85%;
+            max-width: 350px;
+            border-radius: 28px;
+            padding: 20px;
+        }
+        .modal-card h3 { font-size: 1rem; margin-bottom: 12px; }
+        .modal-card input, .modal-card textarea {
+            width: 100%;
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+        .modal-actions button {
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .toast {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background: #2c3e2f;
+            color: white;
+            padding: 5px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            z-index: 1100;
+        }
+        .save-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 0.6rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        /* SVG Icons */
+        .icon {
+            width: 14px;
+            height: 14px;
+            display: inline-block;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .icon-save { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z'/%3E%3C/svg%3E"); }
+        .icon-paste { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M19 2h-4.18C14.4.84 13.3 0 12 0S9.6.84 9.18 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z'/%3E%3C/svg%3E"); }
+        .icon-copy { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z'/%3E%3C/svg%3E"); }
+        .icon-edit { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E"); }
+        .icon-delete { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23b97f44' viewBox='0 0 24 24'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E"); }
+        .icon-folder { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%233a3229' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'/%3E%3C/svg%3E"); }
+        .icon-plus { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%235c472f' viewBox='0 0 24 24'%3E%3Cpath d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E"); }
+        .icon-close { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%238b6946' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E"); }
+        
+        button .icon, .note-footer button .icon {
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .folder-item::before {
+            content: '';
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%233a3229' viewBox='0 0 24 24'%3E%3Cpath d='M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'/%3E%3C/svg%3E");
+            background-size: contain;
+            margin-right: 4px;
+        }
+    </style>
 </head>
 <body>
 <div class="app">
@@ -493,6 +493,13 @@
             }
         }
     });
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/my-notes-app/sw.js')
+            .then(reg => console.log('Service Worker registered:', reg))
+            .catch(err => console.log('Service Worker failed:', err));
+    }
 
     loadFromLocal();
     fullRender();
