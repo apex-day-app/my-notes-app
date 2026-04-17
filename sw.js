@@ -7,25 +7,23 @@ const urlsToCache = [
   './icon-512.png'
 ];
 
-// Install event - cache all files
+// Install - cache all files
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(urlsToCache);
     })
   );
-  self.skipWaiting(); // Activate immediately
+  self.skipWaiting();
 });
 
-// Fetch event - CACHE FIRST, then network
+// Fetch - CACHE FIRST strategy
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
-      // Cache se mil gaya to turant return karo
       if (response) {
         return response;
       }
-      // Nahi mila to network se lao
       return fetch(event.request).then(networkResponse => {
         return caches.open(CACHE_NAME).then(cache => {
           cache.put(event.request, networkResponse.clone());
@@ -36,7 +34,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Activate event - clean old caches
+// Activate - clean old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -49,5 +47,5 @@ self.addEventListener('activate', event => {
       );
     })
   );
-  event.waitUntil(clients.claim()); // Take control immediately
+  event.waitUntil(clients.claim());
 });
