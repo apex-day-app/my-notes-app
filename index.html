@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Notes App</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
     * {
         margin: 0;
@@ -47,11 +46,6 @@
         border-radius: 0px;
         box-shadow: 0 3px 0 #3a3a3a;
         transition: all 0.05s linear;
-        gap: 5px;
-    }
-    .folder-item i {
-        font-size: 11px;
-        color: #ffd966;
     }
     .folder-item.active {
         background: linear-gradient(to bottom, #5a5a5a, #4a4a4a);
@@ -88,9 +82,6 @@
         color: #888;
         font-size: 0.8rem;
         font-weight: normal;
-        width: auto;
-        height: auto;
-        border-radius: 0;
         margin-right: 5px;
     }
     .note-title {
@@ -104,11 +95,6 @@
         background: #f5f0ea;
         padding: 6px 10px;
         border-radius: 12px;
-    }
-    .note-title i {
-        margin-right: 8px;
-        color: #b97f44;
-        font-size: 16px;
     }
     .note-preview {
         font-size: 0.75rem;
@@ -134,15 +120,8 @@
         transition: all 0.2s;
         min-width: 44px;
     }
-    .note-footer button i {
-        font-size: 14px;
-        color: #b97f44;
-        margin-right: 4px;
-    }
     .note-footer button.copied {
         background: #4caf50;
-    }
-    .note-footer button.copied i {
         color: white;
     }
     textarea, input {
@@ -151,33 +130,20 @@
         font-family: inherit;
     }
     
-    /* ========================================
-       NEW EMPTY NOTE CARD DESIGN
-    ======================================== */
+    /* Empty Note Card */
     .empty-card {
         background: #ffffff;
         border-radius: 20px;
         border: 1px solid #e8e0d5;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        transition: all 0.2s ease;
     }
     .empty-card-header {
         background: linear-gradient(135deg, #6b8c5c, #4a6b3a);
-        padding: 12px 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .empty-card-header span {
+        padding: 10px 16px;
         color: #ffffff;
         font-size: 13px;
         font-weight: 600;
-        letter-spacing: 0.5px;
-    }
-    .empty-card-header i {
-        color: #ffd966;
-        font-size: 16px;
     }
     .empty-card-body {
         padding: 16px;
@@ -193,7 +159,6 @@
         background: #fefaf5;
         margin-bottom: 12px;
         outline: none;
-        transition: all 0.2s;
         font-family: inherit;
     }
     .empty-title-input:focus {
@@ -202,7 +167,6 @@
     }
     .empty-title-input::placeholder {
         color: #b0a088;
-        font-weight: normal;
     }
     .empty-text-input {
         width: 100%;
@@ -214,9 +178,7 @@
         min-height: 100px;
         resize: vertical;
         outline: none;
-        transition: all 0.2s;
         font-family: inherit;
-        line-height: 1.5;
     }
     .empty-text-input:focus {
         border-color: #6b8c5c;
@@ -241,9 +203,6 @@
         font-weight: 600;
         color: #4a3a2a;
         transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
     }
     .empty-actions button:active {
         transform: scale(0.96);
@@ -263,18 +222,8 @@
         border-radius: 30px;
         cursor: pointer;
         padding: 6px 10px;
-        font-size: 12px;
+        font-size: 11px;
         color: #8b6946;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        transition: all 0.2s;
-    }
-    .paste-btn-inside i {
-        font-size: 12px;
-    }
-    .paste-btn-inside:active {
-        background: #e0d6c8;
     }
     .input-wrapper textarea + .paste-btn-inside {
         top: 12px;
@@ -282,7 +231,7 @@
     }
     .copy-btn-inside {
         position: absolute;
-        right: 80px;
+        right: 75px;
         top: 50%;
         transform: translateY(-50%);
         background: #f0ebe4;
@@ -290,18 +239,8 @@
         border-radius: 30px;
         cursor: pointer;
         padding: 6px 10px;
-        font-size: 12px;
+        font-size: 11px;
         color: #8b6946;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        transition: all 0.2s;
-    }
-    .copy-btn-inside i {
-        font-size: 12px;
-    }
-    .copy-btn-inside:active {
-        background: #e0d6c8;
     }
     .input-wrapper textarea + .copy-btn-inside {
         top: 12px;
@@ -342,7 +281,7 @@
     .fullscreen-close {
         background: none;
         border: none;
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         cursor: pointer;
         color: #8b6946;
         padding: 8px;
@@ -410,11 +349,11 @@
         transform: translateX(-50%);
         background: #2c3e2f;
         color: white;
-        padding: 10px 20px;
-        border-radius: 50px;
-        font-size: 0.85rem;
+        padding: 8px 16px;
+        border-radius: 40px;
+        font-size: 0.8rem;
         z-index: 1100;
-        animation: slideUpFade 0.8s ease forwards;
+        animation: slideUpFade 0.6s ease forwards;
         white-space: nowrap;
     }
     @keyframes slideUpFade {
@@ -450,7 +389,6 @@
         background: #3a3a3a;
         padding: 4px 10px;
         border-radius: 0px;
-        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
     }
     .selection-buttons {
         display: flex;
@@ -492,13 +430,12 @@
     </div>
 </div>
 
-<!-- Selection Mode Elements -->
 <div class="selection-toolbar" id="selectionToolbar">
     <span class="selection-count" id="selectionCount">0</span>
     <div class="selection-buttons">
-        <button class="select-all-btn" id="selectAllBtn"><i class="fas fa-check-double"></i> All</button>
-        <button class="delete-btn" id="deleteSelectedBtn"><i class="fas fa-trash-alt"></i> Delete</button>
-        <button class="cancel-btn" id="cancelSelectionBtn"><i class="fas fa-times"></i> Cancel</button>
+        <button class="select-all-btn" id="selectAllBtn">All</button>
+        <button class="delete-btn" id="deleteSelectedBtn">Delete</button>
+        <button class="cancel-btn" id="cancelSelectionBtn">Cancel</button>
     </div>
 </div>
 
@@ -558,10 +495,10 @@
         if(t) t.remove();
         let div = document.createElement('div');
         div.className = 'toast';
-        div.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-info-circle'}"></i> ${msg}`;
+        div.innerHTML = msg;
         if(isSuccess) div.style.background = "#4caf50";
         document.body.appendChild(div);
-        setTimeout(() => div.remove(), 800);
+        setTimeout(() => div.remove(), 600);
     }
 
     function renderFolders() {
@@ -570,7 +507,7 @@
         folders.forEach(folder => {
             const folderSpan = document.createElement('span');
             folderSpan.className = `folder-item ${currentFolderId === folder.id ? 'active' : ''}`;
-            folderSpan.innerHTML = `<i class="fas fa-folder"></i> ${escapeHtml(folder.name)}`;
+            folderSpan.innerText = folder.name;
             folderSpan.addEventListener('click', () => {
                 currentFolderId = folder.id;
                 fullRender();
@@ -579,13 +516,12 @@
         });
         const addBtn = document.createElement('span');
         addBtn.className = 'folder-item';
-        addBtn.innerHTML = '<i class="fas fa-plus"></i>';
-        addBtn.style.cssText = 'display: inline-flex; align-items: center; background: linear-gradient(to bottom, #d4942a, #a86a0a); padding: 3px 16px; font-size: 0.75rem; font-weight: 600; color: #ffffff; cursor: pointer; border-radius: 0px; box-shadow: 0 3px 0 #6a3a00; gap: 5px;';
+        addBtn.innerText = '+';
+        addBtn.style.cssText = 'display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(to bottom, #d4942a, #a86a0a); padding: 3px 16px; font-size: 0.75rem; font-weight: 600; color: #ffffff; cursor: pointer; border-radius: 0px; box-shadow: 0 3px 0 #6a3a00;';
         addBtn.addEventListener('click', () => { let name = prompt("Folder name:"); if(name && name.trim()) { folders.push({ id: 'f_' + Date.now(), name: name.trim() }); currentFolderId = folders[folders.length-1].id; ensureEmptyNoteForAllFolders(); saveToLocal(); fullRender(); showToast("Folder created", true); } });
         container.appendChild(addBtn);
     }
 
-    // Selection Mode Variables
     let selectionMode = false;
     let selectedNotes = new Set();
     let longPressTimer = null;
@@ -595,8 +531,8 @@
         let allNotes = document.querySelectorAll('.note-item:not(.empty-note)');
         let selectAllBtn = document.getElementById('selectAllBtn');
         if (selectAllBtn) {
-            if (selectedNotes.size === allNotes.length && allNotes.length > 0) selectAllBtn.innerHTML = '<i class="fas fa-times-circle"></i> Deselect';
-            else selectAllBtn.innerHTML = '<i class="fas fa-check-double"></i> All';
+            if (selectedNotes.size === allNotes.length && allNotes.length > 0) selectAllBtn.innerText = 'Deselect';
+            else selectAllBtn.innerText = 'All';
         }
     }
 
@@ -659,23 +595,20 @@
                 const uid = note.id;
                 card.innerHTML = `
                     <div class="empty-card">
-                        <div class="empty-card-header">
-                            <span><i class="fas fa-pen-alt" style="margin-right: 6px;"></i> Create New Note</span>
-                            <i class="fas fa-edit"></i>
-                        </div>
+                        <div class="empty-card-header">New Note</div>
                         <div class="empty-card-body">
                             <div class="input-wrapper">
-                                <input type="text" id="title_${uid}" placeholder="Note title..." class="empty-title-input">
-                                <button class="copy-title-btn copy-btn-inside" data-id="${uid}"><i class="fas fa-copy"></i> Copy</button>
-                                <button class="paste-title-btn paste-btn-inside" data-id="${uid}"><i class="fas fa-paste"></i> Paste</button>
+                                <input type="text" id="title_${uid}" placeholder="Title" class="empty-title-input">
+                                <button class="copy-title-btn copy-btn-inside" data-id="${uid}">Copy</button>
+                                <button class="paste-title-btn paste-btn-inside" data-id="${uid}">Paste</button>
                             </div>
                             <div class="input-wrapper">
-                                <textarea id="text_${uid}" placeholder="Write your note content here..." class="empty-text-input"></textarea>
-                                <button class="copy-text-btn copy-btn-inside" data-id="${uid}"><i class="fas fa-copy"></i> Copy</button>
-                                <button class="paste-text-btn paste-btn-inside" data-id="${uid}"><i class="fas fa-paste"></i> Paste</button>
+                                <textarea id="text_${uid}" placeholder="Write note..." class="empty-text-input"></textarea>
+                                <button class="copy-text-btn copy-btn-inside" data-id="${uid}">Copy</button>
+                                <button class="paste-text-btn paste-btn-inside" data-id="${uid}">Paste</button>
                             </div>
                             <div class="empty-actions">
-                                <button class="save-empty-btn" data-id="${uid}"><i class="fas fa-save"></i> Save Note</button>
+                                <button class="save-empty-btn" data-id="${uid}">Save</button>
                             </div>
                         </div>
                     </div>`;
@@ -691,16 +624,15 @@
                 }
                 card.innerHTML = `
                     <div class="note-title">
-                        <span class="note-number">${note.displayNumber}. </span>
-                        <i class="fas fa-file-alt"></i>
+                        <span class="note-number">${note.displayNumber}.</span>
                         ${escapeHtml(note.title)}
                     </div>
                     <div class="note-preview">${escapeHtml(preview)}</div>
                     <div class="note-footer">
-                        <button class="copy-title" data-id="${note.id}" title="Copy Title"><i class="fas fa-copy"></i> Title</button>
-                        <button class="copy-content" data-id="${note.id}" title="Copy Content"><i class="fas fa-copy"></i> Content</button>
-                        <button class="edit-note" data-id="${note.id}"><i class="fas fa-edit"></i></button>
-                        <button class="delete-note" data-id="${note.id}"><i class="fas fa-trash-alt"></i></button>
+                        <button class="copy-title" data-id="${note.id}">Copy Title</button>
+                        <button class="copy-content" data-id="${note.id}">Copy Content</button>
+                        <button class="edit-note" data-id="${note.id}">Edit</button>
+                        <button class="delete-note" data-id="${note.id}">Delete</button>
                     </div>`;
                 
                 card.addEventListener('touchstart', (e) => {
@@ -869,7 +801,7 @@
         div.className = 'fullscreen-modal';
         div.innerHTML = `<div class="fullscreen-header">
                 <input id="fsTitle" value="${escapeHtml(note.title)}" placeholder="Title">
-                <button class="fullscreen-close"><i class="fas fa-times"></i></button>
+                <button class="fullscreen-close">X</button>
             </div>
             <div id="fsContent" class="fullscreen-content" contenteditable="true">${escapeHtml(note.content)}</div>`;
         document.body.appendChild(div);
@@ -895,11 +827,11 @@
         const modal = document.createElement('div');
         modal.className = 'modal-mask';
         modal.innerHTML = `<div class="modal-card">
-                <h3><i class="fas fa-edit"></i> Edit Note</h3>
+                <h3>Edit Note</h3>
                 <input id="editTitle" value="${escapeHtml(note.title)}" placeholder="Title">
                 <textarea id="editContent" rows="4" placeholder="Write your note...">${escapeHtml(note.content)}</textarea>
                 <div class="modal-actions">
-                    <button id="saveEdit" style="background:#ffd966;"><i class="fas fa-save"></i> Save</button>
+                    <button id="saveEdit" style="background:#ffd966;">Save</button>
                     <button id="cancelEdit" style="background:#e0d6c8;">Cancel</button>
                 </div>
             </div>`;
