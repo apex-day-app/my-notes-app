@@ -6,421 +6,504 @@
     <title>Notes App</title>
     <link rel="manifest" href="manifest.json">
     <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-    }
-    body {
-        background: #f0ede8;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        padding: 0px;
-        min-height: 100vh;
-        padding-bottom: 80px;
-    }
-    .app {
-        max-width: 550px;
-        margin: 0 10px;
-        background: transparent;
-    }
-    .folder-scroll {
-        background: #4a4a4a;
-        padding: 4px 0px;
-        margin-bottom: 10px;
-        overflow-x: auto;
-        white-space: nowrap;
-        display: flex;
-        gap: 2px;
-        border-radius: 0px;
-    }
-    .folder-item {
-        display: inline-flex;
-        align-items: center;
-        background: linear-gradient(to bottom, #7a7a7a, #5a5a5a);
-        padding: 3px 16px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #f0f0f0;
-        cursor: pointer;
-        border-radius: 0px;
-        box-shadow: 0 3px 0 #3a3a3a;
-        transition: all 0.05s linear;
-    }
-    .folder-item.active {
-        background: linear-gradient(to bottom, #5a5a5a, #4a4a4a);
-        box-shadow: 0 1px 0 #3a3a3a;
-        transform: translateY(2px);
-    }
-    .folder-item:active {
-        background: linear-gradient(to bottom, #5a5a5a, #4a4a4a);
-        box-shadow: 0 1px 0 #3a3a3a;
-        transform: translateY(2px);
-    }
-    .note-item {
-        background: #ffffff;
-        border-radius: 20px;
-        border: 1px solid #e8e0d5;
-        padding: 14px 5px;
-        cursor: pointer;
-        position: relative;
-        transition: all 0.2s;
-    }
-    .note-item.empty-note {
-        background: transparent;
-        border: none;
-        padding: 0px;
-        margin: 0px;
-    }
-    .note-item.selected {
-        background: #e8f5e9;
-        border: 2px solid #4caf50;
-    }
-    .note-number {
-        display: inline;
-        background: none;
-        color: #888;
-        font-size: 0.8rem;
-        font-weight: normal;
-        margin-right: 5px;
-    }
-    .note-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #2c241a;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        background: #f5f0ea;
-        padding: 6px 10px;
-        border-radius: 12px;
-    }
-    .note-preview {
-        font-size: 0.75rem;
-        color: #6b5340;
-        line-height: 1.4;
-        white-space: pre-wrap;
-        margin-bottom: 12px;
-        border-left: 2px solid #ffe0b5;
-        padding-left: 10px;
-    }
-    .note-footer {
-        display: flex;
-        gap: 8px;
-        justify-content: flex-end;
-    }
-    .note-footer button {
-        background: #f7f3ec;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 40px;
-        cursor: pointer;
-        font-size: 13px;
-        transition: all 0.2s;
-        min-width: 44px;
-    }
-    .note-footer button.copied {
-        background: #4caf50;
-        color: white;
-    }
-    textarea, input {
-        touch-action: manipulation;
-        font-size: 16px;
-        font-family: inherit;
-    }
-    
-    /* Empty Note Card */
-    .empty-card {
-        background: #ffffff;
-        border-radius: 20px;
-        border: 1px solid #e8e0d5;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    .empty-card-header {
-        background: linear-gradient(135deg, #6b8c5c, #4a6b3a);
-        padding: 10px 16px;
-        color: #ffffff;
-        font-size: 13px;
-        font-weight: 600;
-    }
-    .empty-card-body {
-        padding: 16px;
-        background: #ffffff;
-    }
-    .empty-title-input {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1px solid #e8e0d5;
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 500;
-        background: #fefaf5;
-        margin-bottom: 12px;
-        outline: none;
-        font-family: inherit;
-    }
-    .empty-title-input:focus {
-        border-color: #6b8c5c;
-        background: #ffffff;
-    }
-    .empty-title-input::placeholder {
-        color: #b0a088;
-    }
-    .empty-text-input {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1px solid #e8e0d5;
-        border-radius: 12px;
-        font-size: 14px;
-        background: #fefaf5;
-        min-height: 100px;
-        resize: vertical;
-        outline: none;
-        font-family: inherit;
-    }
-    .empty-text-input:focus {
-        border-color: #6b8c5c;
-        background: #ffffff;
-    }
-    .empty-text-input::placeholder {
-        color: #b0a088;
-    }
-    .empty-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        margin-top: 16px;
-    }
-    .empty-actions button {
-        background: #ffd966;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 30px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        color: #4a3a2a;
-        transition: all 0.2s;
-    }
-    .empty-actions button:active {
-        transform: scale(0.96);
-    }
-    .input-wrapper {
-        position: relative;
-        width: 100%;
-        margin-bottom: 0px;
-    }
-    .paste-btn-inside {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #f0ebe4;
-        border: none;
-        border-radius: 30px;
-        cursor: pointer;
-        padding: 6px 10px;
-        font-size: 11px;
-        color: #8b6946;
-    }
-    .input-wrapper textarea + .paste-btn-inside {
-        top: 12px;
-        transform: none;
-    }
-    .copy-btn-inside {
-        position: absolute;
-        right: 75px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #f0ebe4;
-        border: none;
-        border-radius: 30px;
-        cursor: pointer;
-        padding: 6px 10px;
-        font-size: 11px;
-        color: #8b6946;
-    }
-    .input-wrapper textarea + .copy-btn-inside {
-        top: 12px;
-        transform: none;
-    }
-    
-    /* Fullscreen Modal */
-    .fullscreen-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #ffffff;
-        z-index: 2000;
-        display: flex;
-        flex-direction: column;
-        padding: 20px;
-        overflow-y: auto;
-    }
-    .fullscreen-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #eee;
-        margin-bottom: 20px;
-    }
-    .fullscreen-header input {
-        font-size: 1.3rem;
-        font-weight: 600;
-        border: none;
-        background: transparent;
-        width: 80%;
-        outline: none;
-        font-family: inherit;
-    }
-    .fullscreen-close {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #8b6946;
-        padding: 8px;
-    }
-    .fullscreen-content {
-        flex: 1;
-        font-size: 1rem;
-        line-height: 1.6;
-        outline: none;
-        white-space: pre-wrap;
-        min-height: 200px;
-    }
-    
-    /* Modal */
-    .modal-mask {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    }
-    .modal-card {
-        background: white;
-        width: 85%;
-        max-width: 350px;
-        border-radius: 28px;
-        padding: 20px;
-    }
-    .modal-card h3 {
-        font-size: 1.1rem;
-        margin-bottom: 12px;
-    }
-    .modal-card input, .modal-card textarea {
-        width: 100%;
-        margin: 8px 0;
-        padding: 10px 14px;
-        border-radius: 20px;
-        border: 1px solid #ddd;
-        font-family: inherit;
-        font-size: 0.9rem;
-    }
-    .modal-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        margin-top: 12px;
-    }
-    .modal-actions button {
-        padding: 8px 20px;
-        border-radius: 30px;
-        border: none;
-        cursor: pointer;
-        font-size: 0.85rem;
-    }
-    
-    /* Toast Message */
-    .toast {
-        position: fixed;
-        bottom: auto;
-        top: 80px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #2c3e2f;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 40px;
-        font-size: 0.8rem;
-        z-index: 1100;
-        animation: slideUpFade 0.6s ease forwards;
-        white-space: nowrap;
-    }
-    @keyframes slideUpFade {
-        0% { opacity: 1; transform: translateX(-50%) translateY(0); }
-        70% { opacity: 1; transform: translateX(-50%) translateY(-10px); }
-        100% { opacity: 0; transform: translateX(-50%) translateY(-30px); visibility: hidden; }
-    }
-    
-    /* Selection Toolbar */
-    .selection-toolbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: #4a4a4a;
-        padding: 4px 8px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 100;
-        transform: translateY(-100%);
-        transition: transform 0.3s ease;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-    .selection-toolbar.show {
-        transform: translateY(0);
-    }
-    .selection-count {
-        display: inline-block;
-        color: #ffd966;
-        font-size: 13px;
-        font-weight: bold;
-        background: #3a3a3a;
-        padding: 4px 10px;
-        border-radius: 0px;
-    }
-    .selection-buttons {
-        display: flex;
-        gap: 8px;
-    }
-    .selection-toolbar button {
-        background: linear-gradient(to bottom, #7a7a7a, #5a5a5a);
-        padding: 4px 12px;
-        border-radius: 0px;
-        border: none;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 600;
-        min-width: 55px;
-        color: #f0f0f0;
-        box-shadow: 0 2px 0 #3a3a3a;
-        transition: all 0.05s linear;
-    }
-    .selection-toolbar button:active {
-        transform: translateY(2px);
-        box-shadow: 0 0px 0 #3a3a3a;
-    }
-    .delete-btn { background: linear-gradient(to bottom, #c93a2a, #a91a0a); box-shadow: 0 2px 0 #6a0a00; }
-    .select-all-btn { background: linear-gradient(to bottom, #3a6a9a, #1a4a7a); box-shadow: 0 2px 0 #002a4a; }
-    .cancel-btn { background: linear-gradient(to bottom, #6a6a6a, #4a4a4a); box-shadow: 0 2px 0 #2a2a2a; }
-    
-    .notes-list {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    </style>
+:root {
+    --btn-width: 22px;
+    --btn-height: 22px;
+    --btn-radius: 50%;
+    --btn-bg-top: #6a6a6a;
+    --btn-bg-bottom: #4a4a4a;
+    --btn-shadow-color: #2a2a2a;
+    --btn-text-color: #f0f0f0;
+    --btn-border-color: #888888;
+    --btn-border-width: 1px;
+    --save-bg: #ffd966;
+    --save-color: #4a3a2a;
+    --save-shadow: #c8a84a;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+body {
+    background: #e8d5b5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    padding: 0px;
+    min-height: 100vh;
+    padding-bottom: 80px;
+}
+.app {
+    max-width: 550px;
+    margin: 0 10px;
+    background: transparent;
+}
+.folder-scroll {
+    background: #4a4a4a;
+    padding: 4px 0px;
+    margin-bottom: 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    gap: 2px;
+    border-radius: 0px;
+}
+.folder-item {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(to bottom, #7a7a7a, #5a5a5a);
+    padding: 3px 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #f0f0f0;
+    cursor: pointer;
+    border-radius: 0px;
+    box-shadow: 0 3px 0 #3a3a3a;
+    transition: all 0.05s linear;
+}
+.folder-item.active {
+    background: linear-gradient(to bottom, #5a5a5a, #4a4a4a);
+    box-shadow: 0 1px 0 #3a3a3a;
+    transform: translateY(2px);
+}
+.folder-item:active {
+    background: linear-gradient(to bottom, #5a5a5a, #4a4a4a);
+    box-shadow: 0 1px 0 #3a3a3a;
+    transform: translateY(2px);
+}
+.note-item {
+    background: #ffffff;
+    border-radius: 0px 0px 20px 20px;
+    border: 1px solid #e8e0d5;
+    padding: 0px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    overflow: hidden;
+}
+.note-item.empty-note {
+    background: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+}
+.note-item.selected {
+    background: #e8f5e9;
+    border: 2px solid #2e7d32;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.2);
+}
+.note-title {
+    background: #d4d4d4;
+    padding: 4px 12px;
+    margin: 0px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.note-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #b0b0b0;
+    color: #333333;
+    font-size: 0.65rem;
+    font-weight: 700;
+    width: 26px;
+    height: 22px;
+    border-radius: 0px;
+    margin: 0px;
+}
+.note-title-text {
+    flex: 1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333333;
+}
+.note-preview {
+    font-size: 0.75rem;
+    color: #6b5340;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    margin: 12px;
+    padding-left: 10px;
+    border-left: 2px solid #ffe0b5;
+}
+.note-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    padding: 0px 12px 12px 12px;
+}
+textarea, input {
+    touch-action: manipulation;
+    font-size: 16px;
+    font-family: inherit;
+}
+.empty-card {
+    background: #5C3317;
+    border: none;
+    border-radius: 0px 0px 20px 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.empty-card-header-wrapper {
+    display: flex;
+    align-items: center;
+    background: #8B5A2B;
+    padding: 0px;
+    margin: 0px;
+    gap: 6px;
+    padding-right: 8px;
+}
+.empty-card-number {
+    background: #6B4226;
+    color: #f0e0c0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    width: auto;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    margin: 0px;
+}
+.empty-card-header {
+    flex: 1;
+    background: #8B5A2B;
+    padding: 0px 8px;
+    margin: 0px;
+    color: #f0e0c0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    height: 32px;
+    line-height: 32px;
+    display: flex;
+    align-items: center;
+    outline: none;
+}
+.empty-card-header:focus {
+    outline: none;
+}
+.empty-card-header:empty:before {
+    content: attr(data-placeholder);
+    color: #c0a070;
+    font-weight: normal;
+}
+.empty-card-header:focus:empty:before {
+    content: attr(data-placeholder);
+    color: #c0a070;
+    font-weight: normal;
+}
+.empty-card-header:focus:not(:empty):before {
+    content: none;
+}
+.empty-card-body {
+    padding: 14px;
+    background: #6B4226;
+}
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+.empty-text-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #5A3A18;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #fff8e8;
+    min-height: 120px;
+    resize: vertical;
+    outline: none;
+    font-family: inherit;
+    color: #2c241a;
+}
+.empty-text-input:focus {
+    border-color: #b0a898;
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgba(100, 100, 100, 0.05);
+}
+.empty-text-input::placeholder {
+    color: #b8aca0;
+    font-size: 14px;
+}
+/* Universal Circular Button Style - All from Root Variables */
+.copy-btn, .paste-btn {
+    background: linear-gradient(to bottom, var(--btn-bg-top), var(--btn-bg-bottom));
+    border: var(--btn-border-width) solid var(--btn-border-color);
+    border-radius: var(--btn-radius);
+    cursor: pointer;
+    padding: 0px;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--btn-text-color);
+    min-width: var(--btn-width);
+    width: var(--btn-width);
+    height: var(--btn-height);
+    text-align: center;
+    transition: all 0.05s linear;
+    box-shadow: 0 3px 0 var(--btn-shadow-color);
+    margin: 0 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.copy-btn:active, .paste-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 0px 0 var(--btn-shadow-color);
+}
+.copy-btn.copied {
+    background: #4caf50;
+    color: white;
+    border-color: #2e7d32;
+    box-shadow: 0 3px 0 #2e7d32;
+}
+/* Save button same size */
+.save-inside-text {
+    position: absolute;
+    right: 140px;
+    top: 14px;
+    background: var(--save-bg);
+    border: var(--btn-border-width) solid var(--save-shadow);
+    border-radius: var(--btn-radius);
+    cursor: pointer;
+    padding: 0px;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--save-color);
+    min-width: var(--btn-width);
+    width: var(--btn-width);
+    height: var(--btn-height);
+    box-shadow: 0 3px 0 var(--save-shadow);
+    transition: all 0.05s linear;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.save-inside-text:active {
+    transform: translateY(3px);
+    box-shadow: 0 0px 0 var(--save-shadow);
+}
+/* Inside textarea buttons */
+.copy-inside-text, .paste-inside-text {
+    position: absolute;
+    top: 14px;
+    background: linear-gradient(to bottom, var(--btn-bg-top), var(--btn-bg-bottom));
+    border: var(--btn-border-width) solid var(--btn-border-color);
+    border-radius: var(--btn-radius);
+    cursor: pointer;
+    padding: 0px;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--btn-text-color);
+    min-width: var(--btn-width);
+    width: var(--btn-width);
+    height: var(--btn-height);
+    box-shadow: 0 3px 0 var(--btn-shadow-color);
+    transition: all 0.05s linear;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.copy-inside-text:active, .paste-inside-text:active {
+    transform: translateY(3px);
+    box-shadow: 0 0px 0 var(--btn-shadow-color);
+}
+.copy-inside-text { right: 75px; }
+.paste-inside-text { right: 12px; }
+/* Header buttons - Same size as others */
+.empty-card-header-wrapper .copy-btn,
+.empty-card-header-wrapper .paste-btn {
+    min-width: var(--btn-width);
+    width: var(--btn-width);
+    height: var(--btn-height);
+    font-size: 13px;
+}
+/* Note footer button */
+.note-footer .copy-btn {
+    min-width: var(--btn-width);
+    width: var(--btn-width);
+    height: var(--btn-height);
+}
+/* Note title button - Same size as others */
+.note-title .copy-btn {
+    min-width: var(--btn-width);
+    width: var(--btn-width);
+    height: var(--btn-height);
+    font-size: 13px;
+}
+.fullscreen-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow-y: auto;
+}
+.fullscreen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+}
+.fullscreen-header input {
+    font-size: 1.3rem;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    width: 80%;
+    outline: none;
+    font-family: inherit;
+}
+.fullscreen-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #8b6946;
+    padding: 8px;
+}
+.fullscreen-content {
+    flex: 1;
+    font-size: 1rem;
+    line-height: 1.6;
+    outline: none;
+    white-space: pre-wrap;
+    min-height: 200px;
+}
+.modal-mask {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-card {
+    background: white;
+    width: 85%;
+    max-width: 350px;
+    border-radius: 28px;
+    padding: 20px;
+}
+.modal-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+}
+.modal-card input, .modal-card textarea {
+    width: 100%;
+    margin: 8px 0;
+    padding: 10px 14px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+.modal-actions button {
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+.toast {
+    position: fixed;
+    bottom: auto;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e2f;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 40px;
+    font-size: 0.8rem;
+    z-index: 1100;
+    animation: slideUpFade 0.6s ease forwards;
+    white-space: nowrap;
+}
+@keyframes slideUpFade {
+    0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    70% { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-30px); visibility: hidden; }
+}
+.selection-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #2e7d32;
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.selection-toolbar.show {
+    transform: translateY(0);
+}
+.selection-count {
+    display: inline-block;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    background: #1b5e20;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+.selection-buttons {
+    display: flex;
+    gap: 10px;
+}
+.selection-toolbar button {
+    background: #1b5e20;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    transition: all 0.2s;
+}
+.selection-toolbar button:active {
+    background: #0d3b10;
+    transform: scale(0.96);
+}
+.delete-btn { background: #c62828; }
+.delete-btn:active { background: #8b1a1a; }
+.select-all-btn { background: #1565c0; }
+.select-all-btn:active { background: #0d47a1; }
+.cancel-btn { background: #455a64; }
+.cancel-btn:active { background: #2c3e40; }
+.notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+</style>
 </head>
 <body>
 <div id="foldersList" class="folder-scroll"></div>
@@ -429,7 +512,6 @@
         <div id="notesListArea" class="notes-list"></div>
     </div>
 </div>
-
 <div class="selection-toolbar" id="selectionToolbar">
     <span class="selection-count" id="selectionCount">0</span>
     <div class="selection-buttons">
@@ -438,15 +520,12 @@
         <button class="cancel-btn" id="cancelSelectionBtn">Cancel</button>
     </div>
 </div>
-
 <script>
     let folders = [];
     let notes = [];
     let currentFolderId = null;
-
     function getEmptyNoteId(folderId) { return 'empty_' + folderId; }
     function isEmptyNote(note) { return note.id && note.id.toString().startsWith('empty_'); }
-
     function ensureEmptyNoteForAllFolders() {
         folders.forEach(folder => {
             const emptyId = getEmptyNoteId(folder.id);
@@ -463,7 +542,6 @@
             return true;
         });
     }
-
     function loadFromLocal() {
         const rawFolders = localStorage.getItem('notes_folders');
         const rawNotes = localStorage.getItem('notes_notes');
@@ -476,12 +554,10 @@
         ensureEmptyNoteForAllFolders();
         saveToLocal();
     }
-    
     function saveToLocal() {
         localStorage.setItem('notes_folders', JSON.stringify(folders));
         localStorage.setItem('notes_notes', JSON.stringify(notes));
     }
-
     function escapeHtml(str) {
         if(!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -489,7 +565,6 @@
             return m;
         });
     }
-    
     function showToast(msg, isSuccess = false) {
         let t = document.querySelector('.toast');
         if(t) t.remove();
@@ -500,7 +575,21 @@
         document.body.appendChild(div);
         setTimeout(() => div.remove(), 600);
     }
-
+    async function handleCopy(text, btn) {
+        if (text && text.trim()) {
+            await navigator.clipboard.writeText(text);
+            const originalText = btn.innerText;
+            btn.innerText = '✓';
+            btn.classList.add('copied');
+            showToast("Copied!", true);
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('copied');
+            }, 800);
+        } else {
+            showToast("Nothing to copy");
+        }
+    }
     function renderFolders() {
         const container = document.getElementById('foldersList');
         container.innerHTML = '';
@@ -521,11 +610,9 @@
         addBtn.addEventListener('click', () => { let name = prompt("Folder name:"); if(name && name.trim()) { folders.push({ id: 'f_' + Date.now(), name: name.trim() }); currentFolderId = folders[folders.length-1].id; ensureEmptyNoteForAllFolders(); saveToLocal(); fullRender(); showToast("Folder created", true); } });
         container.appendChild(addBtn);
     }
-
     let selectionMode = false;
     let selectedNotes = new Set();
     let longPressTimer = null;
-
     function updateSelectionCount() {
         document.getElementById('selectionCount').innerText = selectedNotes.size;
         let allNotes = document.querySelectorAll('.note-item:not(.empty-note)');
@@ -535,7 +622,6 @@
             else selectAllBtn.innerText = 'All';
         }
     }
-
     function toggleSelectionMode() {
         selectionMode = !selectionMode;
         selectedNotes.clear();
@@ -553,7 +639,6 @@
         }
         updateSelectionCount();
     }
-
     function toggleNoteSelection(noteId, element) {
         if(!selectionMode) return;
         if(selectedNotes.has(noteId)) {
@@ -565,7 +650,6 @@
         }
         updateSelectionCount();
     }
-
     function renderNotes() {
         const container = document.getElementById('notesListArea');
         let folderNotes = notes.filter(n => n.folderId === currentFolderId);
@@ -579,42 +663,53 @@
             }
             return 0;
         });
-        
         let validNotes = folderNotes.filter(n => !isEmptyNote(n));
         for(let i = 0; i < validNotes.length; i++) {
             validNotes[i].displayNumber = validNotes.length - i;
         }
-        
         container.innerHTML = '';
         folderNotes.forEach(note => {
             const isEmpty = isEmptyNote(note);
             const card = document.createElement('div');
             card.className = `note-item ${isEmpty ? 'empty-note' : ''}`;
-            
             if (isEmpty) {
                 const uid = note.id;
+                const nextNumber = validNotes.length + 1;
                 card.innerHTML = `
                     <div class="empty-card">
-                        <div class="empty-card-header">New Note</div>
+                        <div class="empty-card-header-wrapper">
+                            <div class="empty-card-number" id="emptyNumber_${uid}">${nextNumber}</div>
+                            <div class="empty-card-header" contenteditable="true" id="editableTitle_${uid}" data-placeholder="Title"></div>
+                            <button class="copy-title-inside copy-btn" data-id="${uid}">C</button>
+                            <button class="paste-title-inside paste-btn" data-id="${uid}">P</button>
+                        </div>
                         <div class="empty-card-body">
                             <div class="input-wrapper">
-                                <input type="text" id="title_${uid}" placeholder="Title" class="empty-title-input">
-                                <button class="copy-title-btn copy-btn-inside" data-id="${uid}">Copy</button>
-                                <button class="paste-title-btn paste-btn-inside" data-id="${uid}">Paste</button>
-                            </div>
-                            <div class="input-wrapper">
                                 <textarea id="text_${uid}" placeholder="Write note..." class="empty-text-input"></textarea>
-                                <button class="copy-text-btn copy-btn-inside" data-id="${uid}">Copy</button>
-                                <button class="paste-text-btn paste-btn-inside" data-id="${uid}">Paste</button>
-                            </div>
-                            <div class="empty-actions">
-                                <button class="save-empty-btn" data-id="${uid}">Save</button>
+                                <button class="copy-text-inside copy-inside-text" data-id="${uid}">C</button>
+                                <button class="paste-text-inside paste-inside-text" data-id="${uid}">P</button>
+                                <button class="save-empty-btn save-inside-text" data-id="${uid}">S</button>
                             </div>
                         </div>
                     </div>`;
                 setTimeout(() => {
                     const ta = document.getElementById(`text_${uid}`);
-                    if(ta) ta.addEventListener('keydown', (e) => { if((e.ctrlKey||e.metaKey) && e.key==='Enter') { e.preventDefault(); document.querySelector(`.save-empty-btn[data-id="${uid}"]`).click(); } });
+                    if (ta) {
+                        ta.addEventListener('keydown', (e) => {
+                            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                                e.preventDefault();
+                                document.querySelector(`.save-empty-btn[data-id="${uid}"]`).click();
+                            }
+                        });
+                    }
+                    const titleDiv = document.getElementById(`editableTitle_${uid}`);
+                    if (titleDiv) {
+                        titleDiv.addEventListener('blur', function() {
+                            if (this.innerText.trim() === '') {
+                                this.innerText = '';
+                            }
+                        });
+                    }
                 }, 10);
             } else {
                 let preview = "";
@@ -624,17 +719,14 @@
                 }
                 card.innerHTML = `
                     <div class="note-title">
-                        <span class="note-number">${note.displayNumber}.</span>
-                        ${escapeHtml(note.title)}
+                        <span class="note-number">${note.displayNumber}</span>
+                        <span class="note-title-text">${escapeHtml(note.title)}</span>
+                        <button class="copy-title-note copy-btn" data-id="${note.id}">C</button>
                     </div>
                     <div class="note-preview">${escapeHtml(preview)}</div>
                     <div class="note-footer">
-                        <button class="copy-title" data-id="${note.id}">Copy Title</button>
-                        <button class="copy-content" data-id="${note.id}">Copy Content</button>
-                        <button class="edit-note" data-id="${note.id}">Edit</button>
-                        <button class="delete-note" data-id="${note.id}">Delete</button>
+                        <button class="copy-content-note copy-btn" data-id="${note.id}">C</button>
                     </div>`;
-                
                 card.addEventListener('touchstart', (e) => {
                     if(!selectionMode && !isEmpty) {
                         longPressTimer = setTimeout(() => {
@@ -652,13 +744,12 @@
                 card.addEventListener('touchmove', () => {
                     clearTimeout(longPressTimer);
                 });
-                
                 card.addEventListener('click', (e) => {
                     if(selectionMode) {
                         e.stopPropagation();
                         toggleNoteSelection(note.id, card);
                     } else {
-                        if(e.target.closest('.copy-title') || e.target.closest('.copy-content') || e.target.closest('.edit-note') || e.target.closest('.delete-note')) {
+                        if(e.target.closest('.copy-title-note') || e.target.closest('.copy-content-note')) {
                             return;
                         }
                         openFullscreenNote(note);
@@ -667,19 +758,18 @@
             }
             container.appendChild(card);
         });
-
         document.querySelectorAll('.save-empty-btn').forEach(btn => {
             btn.onclick = () => {
                 const id = btn.getAttribute('data-id');
                 const found = notes.find(n => n.id === id);
                 if(found && isEmptyNote(found)) {
-                    const titleVal = document.getElementById(`title_${id}`).value.trim();
+                    const titleVal = document.getElementById(`editableTitle_${id}`).innerText.trim();
                     const contentVal = document.getElementById(`text_${id}`).value.trim();
                     if(contentVal) {
                         const finalTitle = titleVal || contentVal.split(/\r?\n/)[0].substring(0,40) || "Note";
                         notes.push({ id: Date.now()+'_'+Math.random(), folderId: currentFolderId, title: finalTitle, content: contentVal });
                         saveToLocal();
-                        document.getElementById(`title_${id}`).value = '';
+                        document.getElementById(`editableTitle_${id}`).innerText = '';
                         document.getElementById(`text_${id}`).value = '';
                         renderNotes();
                         showToast("Note saved", true);
@@ -687,90 +777,65 @@
                 }
             };
         });
-        
-        document.querySelectorAll('.paste-title-btn').forEach(btn => {
+        document.querySelectorAll('.copy-title-inside').forEach(btn => {
             btn.onclick = async () => {
                 const id = btn.getAttribute('data-id');
-                const input = document.getElementById(`title_${id}`);
-                if(input) {
+                const titleDiv = document.getElementById(`editableTitle_${id}`);
+                handleCopy(titleDiv?.innerText, btn);
+            };
+        });
+        document.querySelectorAll('.paste-title-inside').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.getAttribute('data-id');
+                const titleDiv = document.getElementById(`editableTitle_${id}`);
+                if (titleDiv) {
                     try {
                         const text = await navigator.clipboard.readText();
-                        if(text && text.trim()) { input.value = text; showToast("Pasted", true); }
-                        else showToast("Empty");
+                        if (text && text.trim()) {
+                            titleDiv.innerText = text;
+                            showToast("Pasted", true);
+                        } else showToast("Empty");
                     } catch(e) { showToast("Allow permission"); }
                 }
             };
         });
-        document.querySelectorAll('.paste-text-btn').forEach(btn => {
+        document.querySelectorAll('.copy-text-inside').forEach(btn => {
             btn.onclick = async () => {
                 const id = btn.getAttribute('data-id');
                 const textarea = document.getElementById(`text_${id}`);
-                if(textarea) {
+                handleCopy(textarea?.value, btn);
+            };
+        });
+        document.querySelectorAll('.paste-text-inside').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.getAttribute('data-id');
+                const textarea = document.getElementById(`text_${id}`);
+                if (textarea) {
                     try {
                         const text = await navigator.clipboard.readText();
-                        if(text && text.trim()) { textarea.value = text; showToast("Pasted", true); }
-                        else showToast("Empty");
+                        if (text && text.trim()) {
+                            textarea.value = text;
+                            showToast("Pasted", true);
+                        } else showToast("Empty");
                     } catch(e) { showToast("Allow permission"); }
                 }
             };
         });
-        
-        document.querySelectorAll('.copy-title-btn').forEach(btn => {
-            btn.onclick = async () => {
-                const id = btn.getAttribute('data-id');
-                const input = document.getElementById(`title_${id}`);
-                if (input && input.value.trim()) {
-                    await navigator.clipboard.writeText(input.value);
-                    showToast("Title copied", true);
-                } else showToast("Nothing to copy");
-            };
-        });
-        
-        document.querySelectorAll('.copy-text-btn').forEach(btn => {
-            btn.onclick = async () => {
-                const id = btn.getAttribute('data-id');
-                const textarea = document.getElementById(`text_${id}`);
-                if (textarea && textarea.value.trim()) {
-                    await navigator.clipboard.writeText(textarea.value);
-                    showToast("Text copied", true);
-                } else showToast("Nothing to copy");
-            };
-        });
-        
-        document.querySelectorAll('.copy-title').forEach(btn => {
+        document.querySelectorAll('.copy-title-note').forEach(btn => {
             btn.onclick = async (e) => {
                 e.stopPropagation();
                 const n = notes.find(x => x.id === btn.getAttribute('data-id'));
-                if(n?.title) {
-                    await navigator.clipboard.writeText(n.title);
-                    btn.classList.add('copied');
-                    showToast("Title copied", true);
-                    setTimeout(() => btn.classList.remove('copied'), 800);
-                }
+                handleCopy(n?.title, btn);
             };
         });
-        document.querySelectorAll('.copy-content').forEach(btn => {
+        document.querySelectorAll('.copy-content-note').forEach(btn => {
             btn.onclick = async (e) => {
                 e.stopPropagation();
                 const n = notes.find(x => x.id === btn.getAttribute('data-id'));
-                if(n?.content) {
-                    await navigator.clipboard.writeText(n.content);
-                    btn.classList.add('copied');
-                    showToast("Content copied", true);
-                    setTimeout(() => btn.classList.remove('copied'), 800);
-                }
+                handleCopy(n?.content, btn);
             };
-        });
-        
-        document.querySelectorAll('.edit-note').forEach(btn => {
-            btn.onclick = (e) => { e.stopPropagation(); const n = notes.find(x=>x.id===btn.getAttribute('data-id')); if(n) openEditModal(n); };
-        });
-        
-        document.querySelectorAll('.delete-note').forEach(btn => {
-            btn.onclick = (e) => { e.stopPropagation(); const id = btn.getAttribute('data-id'); if(confirm("Delete?")){ notes = notes.filter(x=>x.id!==id); saveToLocal(); renderNotes(); showToast("Deleted"); } };
         });
     }
-
     document.getElementById('selectAllBtn').onclick = () => {
         let allNotes = document.querySelectorAll('.note-item:not(.empty-note)');
         if(selectedNotes.size === allNotes.length && allNotes.length > 0) {
@@ -778,7 +843,7 @@
             allNotes.forEach(n => n.classList.remove('selected'));
         } else {
             allNotes.forEach(n => {
-                let id = n.querySelector('.copy-title')?.getAttribute('data-id');
+                let id = n.querySelector('.copy-title-note')?.getAttribute('data-id');
                 if(id) { selectedNotes.add(id); n.classList.add('selected'); }
             });
         }
@@ -795,7 +860,6 @@
         }
     };
     document.getElementById('cancelSelectionBtn').onclick = toggleSelectionMode;
-
     function openFullscreenNote(note) {
         const div = document.createElement('div');
         div.className = 'fullscreen-modal';
@@ -822,7 +886,6 @@
         cd.addEventListener('keydown', (e) => { if((e.ctrlKey||e.metaKey) && (e.key==='Enter'||e.key==='s')) { e.preventDefault(); saveFn(); } });
         ti.addEventListener('keydown', (e) => { if((e.ctrlKey||e.metaKey) && (e.key==='Enter'||e.key==='s')) { e.preventDefault(); saveFn(); } });
     }
-
     function openEditModal(note) {
         const modal = document.createElement('div');
         modal.className = 'modal-mask';
@@ -839,13 +902,10 @@
         document.getElementById('saveEdit').onclick = () => { note.title = document.getElementById('editTitle').value.trim() || "Note"; note.content = document.getElementById('editContent').value; saveToLocal(); renderNotes(); modal.remove(); showToast("Updated", true); };
         document.getElementById('cancelEdit').onclick = () => modal.remove();
     }
-
     function fullRender() { renderFolders(); renderNotes(); }
-
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/my-notes-app/sw.js').catch(err => console.log('SW failed:', err));
     }
-
     loadFromLocal();
     fullRender();
 </script>
