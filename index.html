@@ -1,712 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚡ Instant Notes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>नोट्स ऐप</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{background:#0b0b0b;font-family:system-ui,sans-serif;color:#eee;min-height:100vh;padding-bottom:80px}
-        .app{max-width:550px;margin:0 auto;padding:0 10px}
-        .top-bar{background:#1a1a1a;padding:12px 16px;border-bottom:2px solid #ffd966;position:sticky;top:0;z-index:99}
-        .app-title{font-size:1.4rem;font-weight:700;color:#ffd966}
-        .folder-scroll{background:#161616;padding:4px 0;margin-bottom:10px;overflow-x:auto;display:flex;gap:4px;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a}
-        .folder-item{background:#2a2a2a;padding:4px 14px;font-size:.75rem;font-weight:600;color:#ddd;cursor:pointer;border-radius:20px;border:1px solid #3a3a3a;white-space:nowrap;flex-shrink:0}
-        .folder-item.active{background:#ffd966;color:#000;border-color:#ffd966}
-        .folder-item.add{background:#d4942a;color:#fff;border-color:#b87a1a}
-        .notes-list{display:flex;flex-direction:column;gap:6px}
-        .note-item{background:#171717;border-radius:16px;border:1px solid #2a2a2a;overflow:hidden;cursor:pointer;min-height:90px;max-height:90px;display:flex;flex-direction:column}
-        .note-item.pinned{border-color:#ffd966;box-shadow:0 0 0 1px #ffd96644}
-        .note-item.selected{background:#2a2a2a;border-color:#666}
-        .note-item.empty-note{background:0 0;border:0;padding:0;margin:4px 0;min-height:auto;max-height:none}
-        .note-title{background:#212121;padding:2px 10px;display:flex;align-items:center;gap:6px;height:30px;min-height:30px;border-bottom:1px solid #2a2a2a}
-        .note-number{background:#1a1a1a;color:#888;font-size:.6rem;font-weight:700;width:24px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid #2a2a2a;border-radius:4px}
-        .note-title-text{flex:1;font-size:.8rem;font-weight:600;color:#ccc;white-space:nowrap;overflow:hidden}
-        .note-preview{font-size:.7rem;color:#aaa;padding:4px 12px;height:18px;overflow:hidden;border-left:2px solid #555;margin:4px 10px}
-        .note-item.pinned .note-preview{border-left-color:#ffd966}
-        .note-footer{display:flex;gap:6px;justify-content:flex-end;padding:2px 10px 4px;background:#171717}
-        .empty-card{background:#131313;border-radius:16px;border:1px solid #2a2a2a}
-        .empty-card-header-wrapper{display:flex;align-items:center;background:#1f1f1f;padding:0 6px;gap:4px}
-        .empty-card-number{background:#1a1a1a;color:#888;font-size:.65rem;font-weight:700;min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px}
-        .empty-card-header{flex:1;background:0 0;padding:0 4px;color:#ccc;font-size:.85rem;font-weight:600;height:28px;line-height:28px;outline:0;overflow:hidden;white-space:nowrap}
-        .empty-card-header:empty:before{content:attr(data-placeholder);color:#555;font-weight:400}
-        .empty-card-body{padding:8px}
-        .input-wrapper{position:relative}
-        .empty-text-input{width:100%;padding:8px 40px 8px 10px;border:1px solid #2a2a2a;border-radius:12px;font-size:14px;background:#0e0e0e;min-height:80px;resize:vertical;outline:0;color:#ddd;font-family:inherit}
-        .empty-text-input:focus{border-color:#ffd966}
-        .empty-text-input::placeholder{color:#444}
-        .btn{background:linear-gradient(180deg,#2e2e2e,#181818);border:1px solid #3a3a3a;border-radius:30px;cursor:pointer;padding:0;font-size:9px;font-weight:700;color:#ddd;min-width:24px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-        .btn:active{transform:scale(.92)}
-        .btn.gold{background:linear-gradient(180deg,#5a4a2a,#2a2a1a);border-color:#ffd966;color:#ffd966}
-        .save-btn{position:absolute;right:6px;bottom:6px;z-index:5}
-        .paste-btn{background:linear-gradient(180deg,#2a3a5a,#1a2a3a);border-color:#4a6a8a;color:#8ab4ff}
-        .selection-toolbar{position:fixed;top:0;left:0;right:0;background:#1f3a1f;padding:6px 12px;display:flex;justify-content:space-between;align-items:center;z-index:100;transform:translateY(-100%);transition:transform .2s;border-bottom:1px solid #ffd96655}
-        .selection-toolbar.show{transform:translateY(0)}
-        .selection-count{background:#1b5e20;color:#fff;font-weight:700;padding:2px 12px;border-radius:20px;font-size:12px}
-        .selection-buttons{display:flex;gap:4px}
-        .selection-toolbar button{padding:4px 12px;border-radius:20px;border:0;cursor:pointer;font-size:11px;font-weight:600;color:#fff}
-        .sel-del{background:#8b2a2a}
-        .sel-pin{background:#ffd966;color:#000}
-        .sel-cancel{background:#3a4a4a}
-        .sel-all{background:#1a4a7a}
-        .fullscreen-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:#0b0b0b;z-index:200;display:flex;flex-direction:column;padding:16px}
-        .fullscreen-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid #2a2a2a;margin-bottom:12px}
-        .fullscreen-header input{font-size:1.2rem;font-weight:600;border:0;background:0 0;width:80%;outline:0;color:#ddd;font-family:inherit}
-        .fullscreen-close{background:0;border:0;font-size:1.4rem;color:#888;padding:4px 8px;cursor:pointer}
-        .fullscreen-content{flex:1;font-size:.95rem;line-height:1.6;outline:0;white-space:pre-wrap;min-height:50vh;color:#ccc}
-        .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#2a2a2a;color:#fff;padding:4px 16px;border-radius:30px;font-size:.75rem;z-index:999;animation:fadeOut .7s forwards;pointer-events:none;border:1px solid #444}
-        @keyframes fadeOut{0%{opacity:1;transform:translateX(-50%) translateY(0)}70%{opacity:1;transform:translateX(-50%) translateY(-8px)}100%{opacity:0;transform:translateX(-50%) translateY(-20px);visibility:hidden}}
-        .folder-dialog-mask{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:flex-start;justify-content:center;z-index:300;padding-top:60px}
-        .folder-dialog{background:#1a1a1a;border:1px solid #333;border-radius:16px;width:260px;overflow:hidden}
-        .folder-dialog-header{background:#252525;padding:10px;color:#fff;font-weight:600;text-align:center;border-bottom:1px solid #333}
-        .folder-dialog-body{padding:12px}
-        .folder-dialog-body input{width:100%;padding:8px 12px;background:#0e0e0e;border:1px solid #3a3a3a;border-radius:10px;color:#fff;font-size:14px;outline:0}
-        .folder-dialog-body input:focus{border-color:#ffd966}
-        .folder-dialog-footer{display:flex;justify-content:flex-end;gap:6px;padding:8px 12px;border-top:1px solid #2a2a2a}
-        .folder-dialog-footer button{padding:4px 14px;border-radius:20px;border:0;cursor:pointer;font-size:12px}
-        .folder-dialog-footer button:first-child{background:#333;color:#ccc}
-        .folder-dialog-footer button:last-child{background:#ffd966;color:#111;font-weight:600}
-        .note-item,.note-title,.note-preview,.note-footer,.btn{user-select:none;-webkit-user-select:none}
-        .paste-dialog{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
-        .paste-dialog-box{background:#1a1a1a;padding:24px;border-radius:16px;max-width:400px;width:100%;border:1px solid #333}
-        .paste-dialog-box h3{color:#fff;margin-bottom:12px;font-size:18px}
-        .paste-dialog-box textarea{width:100%;padding:12px;background:#0e0e0e;border:1px solid #333;border-radius:8px;color:#fff;min-height:100px;font-family:inherit;font-size:14px;resize:vertical}
-        .paste-dialog-box .actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
-        .paste-dialog-box .actions button{padding:8px 20px;border-radius:8px;border:0;cursor:pointer;font-size:14px}
-        .paste-dialog-box .actions .cancel{background:#333;color:#fff}
-        .paste-dialog-box .actions .confirm{background:#ffd966;color:#000;font-weight:600}
-        @media(max-width:480px){.note-item{min-height:80px;max-height:80px}.note-title{height:26px;min-height:26px}.note-preview{font-size:.65rem;height:16px;padding:2px 10px}}
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="app">
+        <header>
+            <h1>
+                <!-- Note Icon -->
+                <svg class="icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+                नोट्स
+            </h1>
+            <button id="addNoteBtn">
+                <!-- Plus Icon -->
+                <svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                नया
+            </button>
+        </header>
 
-<div class="top-bar">
-    <div class="app-title">⚡ My Notes</div>
-</div>
-<div id="foldersList" class="folder-scroll"></div>
-<div class="app">
-    <div id="notesListArea" class="notes-list"></div>
-</div>
+        <div id="notesContainer"></div>
 
-<!-- Selection Toolbar -->
-<div class="selection-toolbar" id="selectionToolbar">
-    <span class="selection-count" id="selectionCount">0</span>
-    <div class="selection-buttons">
-        <button class="sel-all" id="selectAllBtn">All</button>
-        <button class="sel-pin" id="pinSelectedBtn">📌</button>
-        <button class="sel-del" id="deleteSelectedBtn">🗑</button>
-        <button class="sel-cancel" id="cancelSelectionBtn">✕</button>
+        <!-- Modal -->
+        <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>
+                    <!-- Edit Icon -->
+                    <svg class="icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                    नया नोट
+                </h2>
+                <input type="text" id="noteTitle" placeholder="शीर्षक...">
+                <textarea id="noteContent" placeholder="नोट लिखें..."></textarea>
+                <div class="modal-actions">
+                    <button id="saveNoteBtn" class="save-btn">
+                        <!-- Save Icon -->
+                        <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                            <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+                        </svg>
+                        सेव करें
+                    </button>
+                    <button id="closeModalBtn" class="close-btn">
+                        <!-- Close Icon -->
+                        <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                        रद्द करें
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-// ============================================
-// ⚡⚡⚡ INSTANT NOTES APP - COMPLETE ⚡⚡⚡
-// ============================================
-
-// ===== DATA =====
-let folders = [];
-let notes = [];
-let currentFolderId = null;
-let selectionMode = false;
-let selectedNotes = new Set();
-let selectedOrder = [];
-let longPressTimer = null;
-let currentFullscreenNote = null;
-
-// ===== HELPERS =====
-function getEmptyNoteId(folderId) { return 'empty_' + folderId; }
-function isEmptyNote(note) { return note && note.id && note.id.toString().startsWith('empty_'); }
-function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-
-function showToast(msg) {
-    let t = document.querySelector('.toast'); if(t) t.remove();
-    let div = document.createElement('div'); div.className = 'toast'; div.innerText = msg;
-    document.body.appendChild(div);
-    setTimeout(() => div.remove(), 600);
-}
-
-// ===== UNIVERSAL PASTE - हर जगह काम करेगा =====
-async function universalPaste(element) {
-    // Method 1: Clipboard API
-    try {
-        if (navigator.clipboard && navigator.clipboard.readText) {
-            const text = await navigator.clipboard.readText();
-            if (text && text.trim()) {
-                if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
-                    element.value = text;
-                } else {
-                    element.innerText = text;
-                }
-                showToast('✅ Pasted!');
-                return true;
-            }
+    <script src="app.js"></script>
+    <script>
+        // Service Worker Register
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/my-notes-app/sw.js')
+                .then(() => console.log('✅ Service Worker registered'))
+                .catch(err => console.log('❌ Service Worker failed:', err));
         }
-    } catch(e) { console.log('Clipboard API failed'); }
-    
-    // Method 2: execCommand fallback
-    try {
-        const temp = document.createElement('textarea');
-        temp.style.position = 'fixed';
-        temp.style.left = '-9999px';
-        temp.style.top = '0';
-        document.body.appendChild(temp);
-        temp.focus();
-        
-        const success = document.execCommand('paste');
-        if (success && temp.value) {
-            const text = temp.value;
-            if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
-                element.value = text;
-            } else {
-                element.innerText = text;
-            }
-            document.body.removeChild(temp);
-            showToast('✅ Pasted!');
-            return true;
-        }
-        document.body.removeChild(temp);
-    } catch(e) { console.log('execCommand failed'); }
-    
-    // Method 3: Manual paste dialog
-    return showManualPasteDialog(element);
-}
 
-function showManualPasteDialog(element) {
-    return new Promise((resolve) => {
-        const modal = document.createElement('div');
-        modal.className = 'paste-dialog';
-        modal.innerHTML = `
-            <div class="paste-dialog-box">
-                <h3>📋 Paste Content</h3>
-                <textarea id="manualPasteInput" placeholder="Paste your content here..."></textarea>
-                <div class="actions">
-                    <button class="cancel" id="cancelPasteBtn">Cancel</button>
-                    <button class="confirm" id="confirmPasteBtn">Paste</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        
-        const input = modal.querySelector('#manualPasteInput');
-        input.focus();
-        
-        modal.querySelector('#cancelPasteBtn').onclick = () => {
-            modal.remove();
-            resolve(false);
-        };
-        
-        modal.querySelector('#confirmPasteBtn').onclick = () => {
-            const text = input.value;
-            if (text && text.trim()) {
-                if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
-                    element.value = text;
-                } else {
-                    element.innerText = text;
-                }
-                showToast('✅ Pasted!');
-                modal.remove();
-                resolve(true);
-            } else {
-                showToast('❌ Nothing to paste');
-            }
-        };
-        
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                modal.querySelector('#confirmPasteBtn').click();
-            }
-            if (e.key === 'Escape') {
-                modal.querySelector('#cancelPasteBtn').click();
+        // Offline Check
+        window.addEventListener('load', () => {
+            if (!navigator.onLine) {
+                const offlineMsg = document.createElement('div');
+                offlineMsg.id = 'offlineBanner';
+                offlineMsg.textContent = '📡 आप ऑफलाइन हैं - सेव्ड डेटा के साथ काम कर रहे हैं';
+                document.body.prepend(offlineMsg);
             }
         });
-    });
-}
-
-// ===== STORAGE =====
-function loadFromLocal() {
-    try {
-        const rawFolders = localStorage.getItem('notes_folders');
-        const rawNotes = localStorage.getItem('notes_notes');
-        folders = rawFolders ? JSON.parse(rawFolders) : [{ id: 'f1', name: 'Main' }];
-        notes = rawNotes ? JSON.parse(rawNotes) : [];
-        if(!currentFolderId || !folders.find(f => f.id === currentFolderId)) {
-            currentFolderId = folders[0]?.id || 'f1';
-        }
-        folders.forEach(folder => {
-            const eid = getEmptyNoteId(folder.id);
-            if(!notes.find(n => n.id === eid)) {
-                notes.push({ id: eid, folderId: folder.id, title: '', content: '', isEmpty: true });
-            }
-        });
-        notes = notes.filter(n => {
-            if(n.id && n.id.toString().startsWith('empty_')) {
-                const fid = n.id.toString().replace('empty_', '');
-                return folders.some(f => f.id === fid);
-            }
-            return true;
-        });
-        saveToLocal();
-    } catch(e) { console.error(e); }
-}
-
-function saveToLocal() {
-    try {
-        localStorage.setItem('notes_folders', JSON.stringify(folders));
-        localStorage.setItem('notes_notes', JSON.stringify(notes));
-    } catch(e) { console.error(e); }
-}
-
-// ===== COPY FUNCTION =====
-async function handleCopy(text, btn) {
-    if(text && text.trim()) {
-        await navigator.clipboard.writeText(text);
-        const orig = btn.innerText;
-        btn.innerText = '✓';
-        btn.style.background = '#3a5a3a';
-        showToast('✅ Copied!');
-        setTimeout(() => {
-            btn.innerText = orig;
-            btn.style.background = '';
-        }, 600);
-    } else {
-        showToast('❌ Nothing to copy');
-    }
-}
-
-// ===== RENDER FUNCTIONS =====
-function renderFolders() {
-    const container = document.getElementById('foldersList');
-    let html = '';
-    folders.forEach(folder => {
-        const active = currentFolderId === folder.id ? ' active' : '';
-        html += `<span class="folder-item${active}" data-fid="${folder.id}">${folder.name}</span>`;
-    });
-    html += `<span class="folder-item add" id="addFolderBtn">+</span>`;
-    container.innerHTML = html;
-    
-    container.querySelectorAll('.folder-item[data-fid]').forEach(el => {
-        el.addEventListener('click', () => {
-            currentFolderId = el.dataset.fid;
-            fullRender();
-        });
-    });
-    document.getElementById('addFolderBtn').addEventListener('click', showNewFolderDialog);
-}
-
-function renderNotes() {
-    const container = document.getElementById('notesListArea');
-    let folderNotes = notes.filter(n => n.folderId === currentFolderId);
-    
-    folderNotes.sort((a, b) => {
-        if(isEmptyNote(a) && !isEmptyNote(b)) return -1;
-        if(!isEmptyNote(a) && isEmptyNote(b)) return 1;
-        if(!isEmptyNote(a) && !isEmptyNote(b)) {
-            if(a.pinned && !b.pinned) return -1;
-            if(!a.pinned && b.pinned) return 1;
-            if(a.pinned && b.pinned) {
-                const ta = a.pinTime || 0, tb = b.pinTime || 0;
-                if(ta !== tb) return tb - ta;
-            }
-            const ua = a.unpinTime || 0, ub = b.unpinTime || 0;
-            if(ua !== ub) return ub - ua;
-            return (parseInt(b.id) || 0) - (parseInt(a.id) || 0);
-        }
-        return 0;
-    });
-    
-    const validNotes = folderNotes.filter(n => !isEmptyNote(n));
-    validNotes.forEach((n, i) => n.displayNumber = validNotes.length - i);
-    
-    let html = '';
-    folderNotes.forEach(note => {
-        const isEmpty = isEmptyNote(note);
-        const pinnedClass = note.pinned ? ' pinned' : '';
-        const selectedClass = selectedNotes.has(note.id) ? ' selected' : '';
-        
-        if(isEmpty) {
-            const uid = note.id;
-            const nextNum = validNotes.length + 1;
-            html += `
-                <div class="note-item empty-note" data-id="${uid}">
-                    <div class="empty-card">
-                        <div class="empty-card-header-wrapper">
-                            <div class="empty-card-number">${nextNum}</div>
-                            <div class="empty-card-header" contenteditable="true" id="et_${uid}" data-placeholder="Title"></div>
-                            <button class="btn paste-btn paste-title-btn" data-id="${uid}">📋</button>
-                        </div>
-                        <div class="empty-card-body">
-                            <div class="input-wrapper">
-                                <textarea id="ta_${uid}" placeholder="Write note..." class="empty-text-input"></textarea>
-                                <button class="btn paste-btn paste-text-btn" data-id="${uid}">📋</button>
-                                <button class="btn gold save-btn save-empty-btn" data-id="${uid}">💾</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            let preview = note.content ? note.content.substring(0, 60) : '';
-            if(preview.length > 57) preview = preview.slice(0, 55) + '…';
-            html += `
-                <div class="note-item${pinnedClass}${selectedClass}" data-id="${note.id}">
-                    <div class="note-title">
-                        <span class="note-number">${note.displayNumber}</span>
-                        <div class="note-title-text">${escapeHtml(note.title)}</div>
-                        <button class="btn copy-title-note" data-id="${note.id}">C</button>
-                        <button class="btn paste-btn paste-title-note" data-id="${note.id}">📋</button>
-                    </div>
-                    <div class="note-preview">${escapeHtml(preview)}</div>
-                    <div class="note-footer">
-                        <button class="btn copy-content-note" data-id="${note.id}">C</button>
-                        <button class="btn paste-btn paste-content-note" data-id="${note.id}">📋</button>
-                    </div>
-                </div>
-            `;
-        }
-    });
-    container.innerHTML = html;
-    
-    // ===== ATTACH EVENTS =====
-    
-    // Save empty notes
-    document.querySelectorAll('.save-empty-btn').forEach(btn => {
-        btn.onclick = () => {
-            const id = btn.dataset.id;
-            const found = notes.find(n => n.id === id);
-            if(found && isEmptyNote(found)) {
-                const title = document.getElementById(`et_${id}`)?.innerText.trim() || '';
-                const content = document.getElementById(`ta_${id}`)?.value.trim() || '';
-                if(content) {
-                    const finalTitle = title || content.split(/\r?\n/)[0].substring(0,40) || 'Note';
-                    notes.push({ 
-                        id: Date.now() + '_' + Math.random().toString(36).substr(2, 4), 
-                        folderId: currentFolderId, 
-                        title: finalTitle, 
-                        content: content 
-                    });
-                    saveToLocal();
-                    document.getElementById(`et_${id}`).innerText = '';
-                    document.getElementById(`ta_${id}`).value = '';
-                    renderNotes();
-                    showToast('💾 Saved!');
-                } else {
-                    showToast('✏️ Write something');
-                }
-            }
-        };
-    });
-    
-    // ===== PASTE BUTTONS - UNIVERSAL =====
-    document.querySelectorAll('.paste-title-btn, .paste-text-btn, .paste-title-note, .paste-content-note').forEach(btn => {
-        btn.onclick = async function(e) {
-            e.stopPropagation();
-            const id = this.dataset.id;
-            const isTitle = this.classList.contains('paste-title-btn') || this.classList.contains('paste-title-note');
-            const isContent = this.classList.contains('paste-text-btn') || this.classList.contains('paste-content-note');
-            
-            let element;
-            if (isTitle) {
-                // For empty note title
-                if (this.classList.contains('paste-title-btn')) {
-                    element = document.getElementById(`et_${id}`);
-                } else {
-                    // For saved note title
-                    const parent = this.closest('.note-title');
-                    element = parent?.querySelector('.note-title-text');
-                }
-            } else if (isContent) {
-                if (this.classList.contains('paste-text-btn')) {
-                    element = document.getElementById(`ta_${id}`);
-                } else {
-                    // For saved note content - we need to edit it
-                    const note = notes.find(n => n.id === id);
-                    if (note) {
-                        // Open fullscreen to paste
-                        openFullscreenNote(note);
-                        setTimeout(() => {
-                            const contentEl = document.getElementById('fsContent');
-                            if (contentEl) {
-                                universalPaste(contentEl);
-                            }
-                        }, 100);
-                        return;
-                    }
-                }
-            }
-            
-            if (element) {
-                await universalPaste(element);
-            }
-        };
-    });
-    
-    // ===== COPY BUTTONS =====
-    document.querySelectorAll('.copy-title-note').forEach(btn => {
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            const n = notes.find(x => x.id === btn.dataset.id);
-            handleCopy(n?.title, btn);
-        };
-    });
-    
-    document.querySelectorAll('.copy-content-note').forEach(btn => {
-        btn.onclick = async (e) => {
-            e.stopPropagation();
-            const n = notes.find(x => x.id === btn.dataset.id);
-            handleCopy(n?.content, btn);
-        };
-    });
-    
-    // ===== CLICK ON SAVED NOTES =====
-    document.querySelectorAll('.note-item:not(.empty-note)').forEach(card => {
-        const id = card.dataset.id;
-        const note = notes.find(n => n.id === id);
-        if(!note) return;
-        
-        // Long press for selection
-        card.addEventListener('touchstart', (e) => {
-            if(!selectionMode) {
-                longPressTimer = setTimeout(() => {
-                    toggleSelectionMode();
-                    selectedNotes.add(id);
-                    selectedOrder.push(id);
-                    card.classList.add('selected');
-                    updateSelectionCount();
-                }, 400);
-            }
-        });
-        card.addEventListener('touchend', () => clearTimeout(longPressTimer));
-        card.addEventListener('touchmove', () => clearTimeout(longPressTimer));
-        
-        card.addEventListener('click', (e) => {
-            if(e.target.closest('.btn')) return;
-            if(selectionMode) {
-                toggleNoteSelection(id, card);
-            } else {
-                openFullscreenNote(note);
-            }
-        });
-    });
-}
-
-// ===== SELECTION MODE =====
-function toggleSelectionMode() {
-    selectionMode = !selectionMode;
-    selectedNotes.clear();
-    selectedOrder = [];
-    const toolbar = document.getElementById('selectionToolbar');
-    if(selectionMode) {
-        toolbar.classList.add('show');
-        document.querySelectorAll('.note-item:not(.empty-note)').forEach(el => el.style.cursor = 'pointer');
-    } else {
-        toolbar.classList.remove('show');
-        document.querySelectorAll('.note-item').forEach(el => { el.classList.remove('selected'); el.style.cursor = ''; });
-    }
-    updateSelectionCount();
-}
-
-function updateSelectionCount() {
-    document.getElementById('selectionCount').innerText = selectedNotes.size;
-    const allNotes = document.querySelectorAll('.note-item:not(.empty-note)');
-    const btn = document.getElementById('selectAllBtn');
-    if(btn) {
-        btn.innerText = (selectedNotes.size === allNotes.length && allNotes.length > 0) ? '✕' : 'All';
-    }
-}
-
-function toggleNoteSelection(id, el) {
-    if(!selectionMode) return;
-    if(selectedNotes.has(id)) {
-        selectedNotes.delete(id);
-        const idx = selectedOrder.indexOf(id); if(idx > -1) selectedOrder.splice(idx, 1);
-        el.classList.remove('selected');
-    } else {
-        selectedNotes.add(id);
-        selectedOrder.push(id);
-        el.classList.add('selected');
-    }
-    updateSelectionCount();
-    if(selectedNotes.size === 0) toggleSelectionMode();
-}
-
-// Selection buttons
-document.getElementById('selectAllBtn').onclick = () => {
-    const all = document.querySelectorAll('.note-item:not(.empty-note)');
-    if(selectedNotes.size === all.length && all.length > 0) {
-        selectedNotes.clear();
-        selectedOrder = [];
-        all.forEach(n => n.classList.remove('selected'));
-    } else {
-        selectedOrder = [];
-        all.forEach(n => {
-            const id = n.dataset.id;
-            if(id) { selectedNotes.add(id); selectedOrder.push(id); n.classList.add('selected'); }
-        });
-    }
-    updateSelectionCount();
-};
-
-document.getElementById('deleteSelectedBtn').onclick = () => {
-    if(selectedNotes.size === 0) return showToast('No notes');
-    if(confirm(`Delete ${selectedNotes.size} note(s)?`)) {
-        notes = notes.filter(n => !selectedNotes.has(n.id));
-        saveToLocal();
-        renderNotes();
-        toggleSelectionMode();
-        showToast('🗑 Deleted');
-    }
-};
-
-document.getElementById('pinSelectedBtn').onclick = () => {
-    if(selectedNotes.size === 0) return showToast('No notes');
-    const now = Date.now();
-    const order = [...selectedOrder];
-    for(let i = order.length - 1; i >= 0; i--) {
-        const note = notes.find(n => n.id === order[i]);
-        if(note) {
-            if(note.pinned) {
-                note.pinned = false;
-                note.unpinTime = now + (order.length - i);
-                delete note.pinTime;
-            } else {
-                note.pinned = true;
-                note.pinTime = now + (order.length - i);
-                delete note.unpinTime;
-            }
-        }
-    }
-    saveToLocal();
-    renderNotes();
-    toggleSelectionMode();
-    showToast('📌 Updated');
-};
-
-document.getElementById('cancelSelectionBtn').onclick = toggleSelectionMode;
-
-// ===== FULLSCREEN EDIT =====
-function openFullscreenNote(note) {
-    currentFullscreenNote = note;
-    const div = document.createElement('div');
-    div.className = 'fullscreen-modal';
-    div.innerHTML = `
-        <div class="fullscreen-header">
-            <input id="fsTitle" value="${escapeHtml(note.title)}" placeholder="Title">
-            <button class="fullscreen-close">✕</button>
-        </div>
-        <div id="fsContent" class="fullscreen-content" contenteditable="true">${escapeHtml(note.content)}</div>
-    `;
-    document.body.appendChild(div);
-    document.body.style.overflow = 'hidden';
-    
-    const close = div.querySelector('.fullscreen-close');
-    const ti = div.querySelector('#fsTitle');
-    const cd = div.querySelector('#fsContent');
-    const saveFn = () => {
-        note.title = ti.value.trim() || 'Note';
-        note.content = cd.innerText;
-        saveToLocal();
-        renderNotes();
-        div.remove();
-        document.body.style.overflow = '';
-        currentFullscreenNote = null;
-        showToast('💾 Saved');
-    };
-    close.onclick = () => { div.remove(); document.body.style.overflow = ''; currentFullscreenNote = null; };
-    cd.addEventListener('keydown', (e) => {
-        if((e.ctrlKey||e.metaKey) && (e.key === 'Enter' || e.key === 's')) { e.preventDefault(); saveFn(); }
-    });
-    ti.addEventListener('keydown', (e) => {
-        if((e.ctrlKey||e.metaKey) && (e.key === 'Enter' || e.key === 's')) { e.preventDefault(); saveFn(); }
-    });
-}
-
-// ===== NEW FOLDER =====
-function showNewFolderDialog() {
-    const mask = document.createElement('div');
-    mask.className = 'folder-dialog-mask';
-    mask.innerHTML = `
-        <div class="folder-dialog">
-            <div class="folder-dialog-header">📁 New Folder</div>
-            <div class="folder-dialog-body">
-                <input type="text" id="folderNameInput" placeholder="Folder name" autocomplete="off">
-            </div>
-            <div class="folder-dialog-footer">
-                <button id="folderDialogCancel">Cancel</button>
-                <button id="folderDialogCreate">Create</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(mask);
-    const input = mask.querySelector('#folderNameInput');
-    input.focus();
-    mask.querySelector('#folderDialogCancel').onclick = () => mask.remove();
-    mask.querySelector('#folderDialogCreate').onclick = () => {
-        let name = input.value.trim();
-        if(name) {
-            name = name.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-            folders.push({ id: 'f_' + Date.now(), name });
-            currentFolderId = folders[folders.length-1].id;
-            notes.push({ id: getEmptyNoteId(currentFolderId), folderId: currentFolderId, title: '', content: '', isEmpty: true });
-            saveToLocal();
-            fullRender();
-            showToast('📁 Folder created');
-            mask.remove();
-        } else {
-            input.style.border = '1px solid #ff4444';
-            setTimeout(() => input.style.border = '1px solid #3a3a3a', 600);
-        }
-    };
-    input.addEventListener('keypress', (e) => { if(e.key === 'Enter') mask.querySelector('#folderDialogCreate').click(); });
-}
-
-// ===== KEYBOARD SHORTCUTS =====
-document.addEventListener('keydown', (e) => {
-    if((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        const active = document.activeElement;
-        if(active && active.id === 'folderNameInput') {
-            document.querySelector('#folderDialogCreate')?.click();
-        } else if(active && active.id && active.id.startsWith('ta_')) {
-            const id = active.id.replace('ta_', '');
-            document.querySelector(`.save-empty-btn[data-id="${id}"]`)?.click();
-        } else if(active && active.id && active.id.startsWith('et_')) {
-            const id = active.id.replace('et_', '');
-            document.querySelector(`.save-empty-btn[data-id="${id}"]`)?.click();
-        } else if(active && (active.id === 'fsTitle' || active.id === 'fsContent')) {
-            if(currentFullscreenNote) {
-                const ti = document.getElementById('fsTitle');
-                const cd = document.getElementById('fsContent');
-                currentFullscreenNote.title = ti.value.trim() || 'Note';
-                currentFullscreenNote.content = cd.innerText;
-                saveToLocal();
-                renderNotes();
-                showToast('💾 Saved');
-            }
-        }
-    }
-});
-
-// ===== INIT =====
-function fullRender() { renderFolders(); renderNotes(); }
-
-// Load and render instantly
-loadFromLocal();
-fullRender();
-
-// ===== SERVICE WORKER (Optional - delayed) =====
-setTimeout(() => {
-    if('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
-}, 3000);
-
-console.log('⚡ App ready!');
-</script>
+    </script>
 </body>
 </html>
-
-    
