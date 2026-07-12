@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Notes</title>
+    <title>⚡ Instant Notes</title>
     <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
-        /* ⚡ मिनिमम CSS - सिर्फ जरूरी */
         *{margin:0;padding:0;box-sizing:border-box}
-        body{background:#0b0b0b;font-family:system-ui,sans-serif;min-height:100vh;padding-bottom:80px;color:#eee}
+        body{background:#0b0b0b;font-family:system-ui,sans-serif;color:#eee;min-height:100vh;padding-bottom:80px}
         .app{max-width:550px;margin:0 auto;padding:0 10px}
         .top-bar{background:#1a1a1a;padding:12px 16px;border-bottom:2px solid #ffd966;position:sticky;top:0;z-index:99}
         .app-title{font-size:1.4rem;font-weight:700;color:#ffd966}
@@ -41,8 +42,7 @@
         .btn:active{transform:scale(.92)}
         .btn.gold{background:linear-gradient(180deg,#5a4a2a,#2a2a1a);border-color:#ffd966;color:#ffd966}
         .save-btn{position:absolute;right:6px;bottom:6px;z-index:5}
-        .copy-inside{position:absolute;right:6px;top:50%;transform:translateY(-50%);z-index:5}
-        .paste-inside{position:absolute;right:34px;top:50%;transform:translateY(-50%);z-index:5}
+        .paste-btn{background:linear-gradient(180deg,#2a3a5a,#1a2a3a);border-color:#4a6a8a;color:#8ab4ff}
         .selection-toolbar{position:fixed;top:0;left:0;right:0;background:#1f3a1f;padding:6px 12px;display:flex;justify-content:space-between;align-items:center;z-index:100;transform:translateY(-100%);transition:transform .2s;border-bottom:1px solid #ffd96655}
         .selection-toolbar.show{transform:translateY(0)}
         .selection-count{background:#1b5e20;color:#fff;font-weight:700;padding:2px 12px;border-radius:20px;font-size:12px}
@@ -70,12 +70,19 @@
         .folder-dialog-footer button:first-child{background:#333;color:#ccc}
         .folder-dialog-footer button:last-child{background:#ffd966;color:#111;font-weight:600}
         .note-item,.note-title,.note-preview,.note-footer,.btn{user-select:none;-webkit-user-select:none}
+        .paste-dialog{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+        .paste-dialog-box{background:#1a1a1a;padding:24px;border-radius:16px;max-width:400px;width:100%;border:1px solid #333}
+        .paste-dialog-box h3{color:#fff;margin-bottom:12px;font-size:18px}
+        .paste-dialog-box textarea{width:100%;padding:12px;background:#0e0e0e;border:1px solid #333;border-radius:8px;color:#fff;min-height:100px;font-family:inherit;font-size:14px;resize:vertical}
+        .paste-dialog-box .actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+        .paste-dialog-box .actions button{padding:8px 20px;border-radius:8px;border:0;cursor:pointer;font-size:14px}
+        .paste-dialog-box .actions .cancel{background:#333;color:#fff}
+        .paste-dialog-box .actions .confirm{background:#ffd966;color:#000;font-weight:600}
         @media(max-width:480px){.note-item{min-height:80px;max-height:80px}.note-title{height:26px;min-height:26px}.note-preview{font-size:.65rem;height:16px;padding:2px 10px}}
     </style>
 </head>
 <body>
 
-<!-- ⚡ सब कुछ तुरंत दिखे - कोई loader नहीं -->
 <div class="top-bar">
     <div class="app-title">⚡ My Notes</div>
 </div>
@@ -96,7 +103,9 @@
 </div>
 
 <script>
-// ⚡⚡⚡ SUPER FAST - कोई delay नहीं, सब synchronous ⚡⚡⚡
+// ============================================
+// ⚡⚡⚡ INSTANT NOTES APP - COMPLETE ⚡⚡⚡
+// ============================================
 
 // ===== DATA =====
 let folders = [];
@@ -112,23 +121,112 @@ let currentFullscreenNote = null;
 function getEmptyNoteId(folderId) { return 'empty_' + folderId; }
 function isEmptyNote(note) { return note && note.id && note.id.toString().startsWith('empty_'); }
 function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+
 function showToast(msg) {
     let t = document.querySelector('.toast'); if(t) t.remove();
     let div = document.createElement('div'); div.className = 'toast'; div.innerText = msg;
     document.body.appendChild(div);
     setTimeout(() => div.remove(), 600);
 }
-async function handleCopy(text, btn) {
-    if(text && text.trim()) {
-        await navigator.clipboard.writeText(text);
-        const orig = btn.innerText;
-        btn.innerText = '✓'; btn.style.background = '#3a5a3a';
-        showToast('Copied!');
-        setTimeout(() => { btn.innerText = orig; btn.style.background = ''; }, 600);
-    } else showToast('Empty');
+
+// ===== UNIVERSAL PASTE - हर जगह काम करेगा =====
+async function universalPaste(element) {
+    // Method 1: Clipboard API
+    try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            const text = await navigator.clipboard.readText();
+            if (text && text.trim()) {
+                if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
+                    element.value = text;
+                } else {
+                    element.innerText = text;
+                }
+                showToast('✅ Pasted!');
+                return true;
+            }
+        }
+    } catch(e) { console.log('Clipboard API failed'); }
+    
+    // Method 2: execCommand fallback
+    try {
+        const temp = document.createElement('textarea');
+        temp.style.position = 'fixed';
+        temp.style.left = '-9999px';
+        temp.style.top = '0';
+        document.body.appendChild(temp);
+        temp.focus();
+        
+        const success = document.execCommand('paste');
+        if (success && temp.value) {
+            const text = temp.value;
+            if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
+                element.value = text;
+            } else {
+                element.innerText = text;
+            }
+            document.body.removeChild(temp);
+            showToast('✅ Pasted!');
+            return true;
+        }
+        document.body.removeChild(temp);
+    } catch(e) { console.log('execCommand failed'); }
+    
+    // Method 3: Manual paste dialog
+    return showManualPasteDialog(element);
 }
 
-// ===== STORAGE - DIRECT ACCESS =====
+function showManualPasteDialog(element) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'paste-dialog';
+        modal.innerHTML = `
+            <div class="paste-dialog-box">
+                <h3>📋 Paste Content</h3>
+                <textarea id="manualPasteInput" placeholder="Paste your content here..."></textarea>
+                <div class="actions">
+                    <button class="cancel" id="cancelPasteBtn">Cancel</button>
+                    <button class="confirm" id="confirmPasteBtn">Paste</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        const input = modal.querySelector('#manualPasteInput');
+        input.focus();
+        
+        modal.querySelector('#cancelPasteBtn').onclick = () => {
+            modal.remove();
+            resolve(false);
+        };
+        
+        modal.querySelector('#confirmPasteBtn').onclick = () => {
+            const text = input.value;
+            if (text && text.trim()) {
+                if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
+                    element.value = text;
+                } else {
+                    element.innerText = text;
+                }
+                showToast('✅ Pasted!');
+                modal.remove();
+                resolve(true);
+            } else {
+                showToast('❌ Nothing to paste');
+            }
+        };
+        
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                modal.querySelector('#confirmPasteBtn').click();
+            }
+            if (e.key === 'Escape') {
+                modal.querySelector('#cancelPasteBtn').click();
+            }
+        });
+    });
+}
+
+// ===== STORAGE =====
 function loadFromLocal() {
     try {
         const rawFolders = localStorage.getItem('notes_folders');
@@ -138,7 +236,6 @@ function loadFromLocal() {
         if(!currentFolderId || !folders.find(f => f.id === currentFolderId)) {
             currentFolderId = folders[0]?.id || 'f1';
         }
-        // Ensure empty notes
         folders.forEach(folder => {
             const eid = getEmptyNoteId(folder.id);
             if(!notes.find(n => n.id === eid)) {
@@ -163,6 +260,23 @@ function saveToLocal() {
     } catch(e) { console.error(e); }
 }
 
+// ===== COPY FUNCTION =====
+async function handleCopy(text, btn) {
+    if(text && text.trim()) {
+        await navigator.clipboard.writeText(text);
+        const orig = btn.innerText;
+        btn.innerText = '✓';
+        btn.style.background = '#3a5a3a';
+        showToast('✅ Copied!');
+        setTimeout(() => {
+            btn.innerText = orig;
+            btn.style.background = '';
+        }, 600);
+    } else {
+        showToast('❌ Nothing to copy');
+    }
+}
+
 // ===== RENDER FUNCTIONS =====
 function renderFolders() {
     const container = document.getElementById('foldersList');
@@ -174,7 +288,6 @@ function renderFolders() {
     html += `<span class="folder-item add" id="addFolderBtn">+</span>`;
     container.innerHTML = html;
     
-    // Events
     container.querySelectorAll('.folder-item[data-fid]').forEach(el => {
         el.addEventListener('click', () => {
             currentFolderId = el.dataset.fid;
@@ -188,7 +301,6 @@ function renderNotes() {
     const container = document.getElementById('notesListArea');
     let folderNotes = notes.filter(n => n.folderId === currentFolderId);
     
-    // Sort
     folderNotes.sort((a, b) => {
         if(isEmptyNote(a) && !isEmptyNote(b)) return -1;
         if(!isEmptyNote(a) && isEmptyNote(b)) return 1;
@@ -224,15 +336,13 @@ function renderNotes() {
                         <div class="empty-card-header-wrapper">
                             <div class="empty-card-number">${nextNum}</div>
                             <div class="empty-card-header" contenteditable="true" id="et_${uid}" data-placeholder="Title"></div>
-                            <button class="btn copy-title-inside" data-id="${uid}">C</button>
-                            <button class="btn paste-title-inside" data-id="${uid}">P</button>
+                            <button class="btn paste-btn paste-title-btn" data-id="${uid}">📋</button>
                         </div>
                         <div class="empty-card-body">
                             <div class="input-wrapper">
                                 <textarea id="ta_${uid}" placeholder="Write note..." class="empty-text-input"></textarea>
-                                <button class="btn copy-inside copy-text-inside" data-id="${uid}">C</button>
-                                <button class="btn paste-inside paste-text-inside" data-id="${uid}">P</button>
-                                <button class="btn gold save-btn save-empty-btn" data-id="${uid}">S</button>
+                                <button class="btn paste-btn paste-text-btn" data-id="${uid}">📋</button>
+                                <button class="btn gold save-btn save-empty-btn" data-id="${uid}">💾</button>
                             </div>
                         </div>
                     </div>
@@ -247,10 +357,12 @@ function renderNotes() {
                         <span class="note-number">${note.displayNumber}</span>
                         <div class="note-title-text">${escapeHtml(note.title)}</div>
                         <button class="btn copy-title-note" data-id="${note.id}">C</button>
+                        <button class="btn paste-btn paste-title-note" data-id="${note.id}">📋</button>
                     </div>
                     <div class="note-preview">${escapeHtml(preview)}</div>
                     <div class="note-footer">
                         <button class="btn copy-content-note" data-id="${note.id}">C</button>
+                        <button class="btn paste-btn paste-content-note" data-id="${note.id}">📋</button>
                     </div>
                 </div>
             `;
@@ -259,6 +371,7 @@ function renderNotes() {
     container.innerHTML = html;
     
     // ===== ATTACH EVENTS =====
+    
     // Save empty notes
     document.querySelectorAll('.save-empty-btn').forEach(btn => {
         btn.onclick = () => {
@@ -279,49 +392,59 @@ function renderNotes() {
                     document.getElementById(`et_${id}`).innerText = '';
                     document.getElementById(`ta_${id}`).value = '';
                     renderNotes();
-                    showToast('Saved!');
-                } else showToast('Write something');
+                    showToast('💾 Saved!');
+                } else {
+                    showToast('✏️ Write something');
+                }
             }
         };
     });
     
-    // Copy/Paste for empty cards
-    document.querySelectorAll('.copy-title-inside').forEach(btn => {
-        btn.onclick = async () => {
-            const div = document.getElementById(`et_${btn.dataset.id}`);
-            handleCopy(div?.innerText, btn);
-        };
-    });
-    document.querySelectorAll('.paste-title-inside').forEach(btn => {
-        btn.onclick = async () => {
-            const div = document.getElementById(`et_${btn.dataset.id}`);
-            if(div) {
-                try {
-                    const text = await navigator.clipboard.readText();
-                    if(text.trim()) { div.innerText = text; showToast('Pasted'); }
-                } catch(e) { showToast('Permission needed'); }
+    // ===== PASTE BUTTONS - UNIVERSAL =====
+    document.querySelectorAll('.paste-title-btn, .paste-text-btn, .paste-title-note, .paste-content-note').forEach(btn => {
+        btn.onclick = async function(e) {
+            e.stopPropagation();
+            const id = this.dataset.id;
+            const isTitle = this.classList.contains('paste-title-btn') || this.classList.contains('paste-title-note');
+            const isContent = this.classList.contains('paste-text-btn') || this.classList.contains('paste-content-note');
+            
+            let element;
+            if (isTitle) {
+                // For empty note title
+                if (this.classList.contains('paste-title-btn')) {
+                    element = document.getElementById(`et_${id}`);
+                } else {
+                    // For saved note title
+                    const parent = this.closest('.note-title');
+                    element = parent?.querySelector('.note-title-text');
+                }
+            } else if (isContent) {
+                if (this.classList.contains('paste-text-btn')) {
+                    element = document.getElementById(`ta_${id}`);
+                } else {
+                    // For saved note content - we need to edit it
+                    const note = notes.find(n => n.id === id);
+                    if (note) {
+                        // Open fullscreen to paste
+                        openFullscreenNote(note);
+                        setTimeout(() => {
+                            const contentEl = document.getElementById('fsContent');
+                            if (contentEl) {
+                                universalPaste(contentEl);
+                            }
+                        }, 100);
+                        return;
+                    }
+                }
             }
-        };
-    });
-    document.querySelectorAll('.copy-text-inside').forEach(btn => {
-        btn.onclick = async () => {
-            const ta = document.getElementById(`ta_${btn.dataset.id}`);
-            handleCopy(ta?.value, btn);
-        };
-    });
-    document.querySelectorAll('.paste-text-inside').forEach(btn => {
-        btn.onclick = async () => {
-            const ta = document.getElementById(`ta_${btn.dataset.id}`);
-            if(ta) {
-                try {
-                    const text = await navigator.clipboard.readText();
-                    if(text.trim()) { ta.value = text; showToast('Pasted'); }
-                } catch(e) { showToast('Permission needed'); }
+            
+            if (element) {
+                await universalPaste(element);
             }
         };
     });
     
-    // Copy for saved notes
+    // ===== COPY BUTTONS =====
     document.querySelectorAll('.copy-title-note').forEach(btn => {
         btn.onclick = async (e) => {
             e.stopPropagation();
@@ -329,6 +452,7 @@ function renderNotes() {
             handleCopy(n?.title, btn);
         };
     });
+    
     document.querySelectorAll('.copy-content-note').forEach(btn => {
         btn.onclick = async (e) => {
             e.stopPropagation();
@@ -337,7 +461,7 @@ function renderNotes() {
         };
     });
     
-    // Click on saved notes
+    // ===== CLICK ON SAVED NOTES =====
     document.querySelectorAll('.note-item:not(.empty-note)').forEach(card => {
         const id = card.dataset.id;
         const note = notes.find(n => n.id === id);
@@ -425,6 +549,7 @@ document.getElementById('selectAllBtn').onclick = () => {
     }
     updateSelectionCount();
 };
+
 document.getElementById('deleteSelectedBtn').onclick = () => {
     if(selectedNotes.size === 0) return showToast('No notes');
     if(confirm(`Delete ${selectedNotes.size} note(s)?`)) {
@@ -432,9 +557,10 @@ document.getElementById('deleteSelectedBtn').onclick = () => {
         saveToLocal();
         renderNotes();
         toggleSelectionMode();
-        showToast('Deleted');
+        showToast('🗑 Deleted');
     }
 };
+
 document.getElementById('pinSelectedBtn').onclick = () => {
     if(selectedNotes.size === 0) return showToast('No notes');
     const now = Date.now();
@@ -456,11 +582,12 @@ document.getElementById('pinSelectedBtn').onclick = () => {
     saveToLocal();
     renderNotes();
     toggleSelectionMode();
-    showToast('Updated');
+    showToast('📌 Updated');
 };
+
 document.getElementById('cancelSelectionBtn').onclick = toggleSelectionMode;
 
-// ===== FULLSCREEN =====
+// ===== FULLSCREEN EDIT =====
 function openFullscreenNote(note) {
     currentFullscreenNote = note;
     const div = document.createElement('div');
@@ -486,6 +613,7 @@ function openFullscreenNote(note) {
         div.remove();
         document.body.style.overflow = '';
         currentFullscreenNote = null;
+        showToast('💾 Saved');
     };
     close.onclick = () => { div.remove(); document.body.style.overflow = ''; currentFullscreenNote = null; };
     cd.addEventListener('keydown', (e) => {
@@ -502,8 +630,10 @@ function showNewFolderDialog() {
     mask.className = 'folder-dialog-mask';
     mask.innerHTML = `
         <div class="folder-dialog">
-            <div class="folder-dialog-header">New Folder</div>
-            <div class="folder-dialog-body"><input type="text" id="folderNameInput" placeholder="Folder name" autocomplete="off"></div>
+            <div class="folder-dialog-header">📁 New Folder</div>
+            <div class="folder-dialog-body">
+                <input type="text" id="folderNameInput" placeholder="Folder name" autocomplete="off">
+            </div>
             <div class="folder-dialog-footer">
                 <button id="folderDialogCancel">Cancel</button>
                 <button id="folderDialogCreate">Create</button>
@@ -520,11 +650,10 @@ function showNewFolderDialog() {
             name = name.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
             folders.push({ id: 'f_' + Date.now(), name });
             currentFolderId = folders[folders.length-1].id;
-            // Add empty note for new folder
             notes.push({ id: getEmptyNoteId(currentFolderId), folderId: currentFolderId, title: '', content: '', isEmpty: true });
             saveToLocal();
             fullRender();
-            showToast('Created');
+            showToast('📁 Folder created');
             mask.remove();
         } else {
             input.style.border = '1px solid #ff4444';
@@ -534,7 +663,7 @@ function showNewFolderDialog() {
     input.addEventListener('keypress', (e) => { if(e.key === 'Enter') mask.querySelector('#folderDialogCreate').click(); });
 }
 
-// ===== SHORTCUTS =====
+// ===== KEYBOARD SHORTCUTS =====
 document.addEventListener('keydown', (e) => {
     if((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
@@ -555,28 +684,29 @@ document.addEventListener('keydown', (e) => {
                 currentFullscreenNote.content = cd.innerText;
                 saveToLocal();
                 renderNotes();
+                showToast('💾 Saved');
             }
         }
     }
 });
 
-// ===== INIT - IMMEDIATE =====
-// Load and render instantly - no setTimeout
+// ===== INIT =====
+function fullRender() { renderFolders(); renderNotes(); }
+
+// Load and render instantly
 loadFromLocal();
 fullRender();
 
-function fullRender() { renderFolders(); renderNotes(); }
-
-// ===== SERVICE WORKER - OPTIONAL, DELAYED =====
-// ⚡ SW को 3 सेकंड बाद रजिस्टर करें ताकि पहले लोडिंग में देरी न हो
+// ===== SERVICE WORKER (Optional - delayed) =====
 setTimeout(() => {
     if('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/my-notes-app/sw.js')
-            .catch(() => {});
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
 }, 3000);
 
-console.log('⚡ INSTANT NOTES APP - Ready in 0ms!');
+console.log('⚡ App ready!');
 </script>
 </body>
 </html>
+
+    
