@@ -1,0 +1,369 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #f0ede8;
+    color: #1a1a1a;
+    min-height: 100vh;
+}
+
+/* Icons */
+.icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* Offline Banner */
+#offlineBanner {
+    background: #ffd700;
+    color: #1a1a1a;
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 2px solid #e6c200;
+}
+
+/* Header */
+header {
+    background: #ffffff;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1a1a1a;
+}
+
+#addNoteBtn {
+    background: #007aff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 8px rgba(0,122,255,0.3);
+}
+
+#addNoteBtn:hover {
+    transform: scale(1.02);
+    background: #005bb5;
+}
+
+#addNoteBtn:active {
+    transform: scale(0.95);
+}
+
+/* Notes Grid */
+#notesContainer {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.note-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: all 0.2s;
+    border-left: 4px solid #007aff;
+    position: relative;
+    padding-bottom: 60px;
+}
+
+.note-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.note-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #1a1a1a;
+    word-wrap: break-word;
+}
+
+.note-card p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    word-wrap: break-word;
+    margin-bottom: 12px;
+}
+
+.note-card .note-time {
+    font-size: 12px;
+    color: #999;
+    display: block;
+    margin-top: 8px;
+}
+
+.note-card .delete-btn {
+    background: #ff3b30;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.note-card .delete-btn:hover {
+    background: #d6302a;
+}
+
+.note-card .delete-btn:active {
+    transform: scale(0.95);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+    grid-column: 1 / -1;
+}
+
+.empty-state p {
+    font-size: 18px;
+    margin-top: 8px;
+}
+
+.empty-state .sub-text {
+    font-size: 14px;
+    color: #bbb;
+    margin-top: 4px;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: fadeIn 0.3s;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: slideUp 0.3s;
+}
+
+.modal-content h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1a1a1a;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    transition: border 0.2s;
+    margin-bottom: 16px;
+    background: #fafafa;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+    outline: none;
+    border-color: #007aff;
+    background: #ffffff;
+}
+
+.modal-content textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.modal-actions button {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.save-btn {
+    background: #007aff;
+    color: white;
+}
+
+.save-btn:hover {
+    background: #005bb5;
+}
+
+.save-btn:active {
+    transform: scale(0.95);
+}
+
+.close-btn {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.close-btn:hover {
+    background: #e0e0e0;
+}
+
+.close-btn:active {
+    transform: scale(0.95);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    header {
+        padding: 14px 16px;
+    }
+
+    header h1 {
+        font-size: 20px;
+    }
+
+    header h1 .icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    #addNoteBtn {
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+
+    #addNoteBtn .icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    #notesContainer {
+        grid-template-columns: 1fr;
+        padding: 12px;
+        gap: 14px;
+    }
+
+    .modal-content {
+        padding: 24px;
+        margin: 12px;
+    }
+
+    .modal-content h2 {
+        font-size: 20px;
+    }
+
+    .modal-actions button {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+    .note-card {
+        padding: 16px;
+        padding-bottom: 56px;
+    }
+
+    .note-card .delete-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+        bottom: 12px;
+        right: 12px;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f0ede8;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
+}
