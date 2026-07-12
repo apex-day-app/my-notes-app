@@ -1,68 +1,47 @@
-const CACHE_NAME = 'notes-app-v2';
+const CACHE_NAME = 'notes-app-v1';
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+    '/my-notes-app/',
+    '/my-notes-app/index.html',
+    '/my-notes-app/style.css',
+    '/my-notes-app/app.js',
+    '/my-notes-app/manifest.json',
+    '/my-notes-app/icon-192.png',
+    '/my-notes-app/icon-512.png'
 ];
 
-// Install - cache all files
+// Install
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
-    })
-  );
-  self.skipWaiting();
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                return cache.addAll(urlsToCache);
+            })
+            .then(() => self.skipWaiting())
+    );
 });
 
-// Fetch - NETWORK FIRST for HTML, CACHE FIRST for others
+// Fetch
 self.addEventListener('fetch', event => {
-  const url = event.request.url;
-  
-  // For HTML files - try network first, then cache
-  if (url.includes('index.html') || url.endsWith('/')) {
     event.respondWith(
-      fetch(event.request).then(response => {
-        return caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, response.clone());
-          return response;
-        });
-      }).catch(() => {
-        return caches.match(event.request);
-      })
+        caches.match(event.request)
+            .then(response => {
+                return response || fetch(event.request);
+            })
     );
-  } else {
-    // For other files - cache first
-    event.respondWith(
-      caches.match(event.request).then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).then(networkResponse => {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
-        });
-      })
-    );
-  }
 });
 
-// Activate - clean old caches and claim clients
+// Activate
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cache => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cache => {
+                    if (cache !== CACHE_NAME) {
+                        return caches.delete(cache);
+                    }
+                })
+            );
         })
-      );
-    })
-  );
-  event.waitUntil(clients.claim());
+        .then(() => self.clients.claim())
+    );
 });
