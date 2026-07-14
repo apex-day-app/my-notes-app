@@ -1,15 +1,11 @@
 const CACHE_NAME = 'notes-app-v1';
 const urlsToCache = [
-    '/my-notes-app/',
-    '/my-notes-app/index.html',
-    '/my-notes-app/style.css',
-    '/my-notes-app/app.js',
-    '/my-notes-app/manifest.json',
-    '/my-notes-app/icon-192.png',
-    '/my-notes-app/icon-512.png'
+    './',
+    './index.html',
+    './manifest.json'
 ];
 
-// Install
+// Install - सभी Files Cache करें
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -20,7 +16,7 @@ self.addEventListener('install', event => {
     );
 });
 
-// Fetch
+// Fetch - पहले Cache से Load करें
 self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
@@ -30,7 +26,7 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// Activate
+// Activate - पुराना Cache हटाएं
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
