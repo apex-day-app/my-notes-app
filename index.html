@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>नोट्स ऐप</title>
     <link rel="manifest" href="manifest.json">
+    
+    <!-- Preload - Fast Load के लिए -->
+    <link rel="preload" href="manifest.json" as="fetch" crossorigin="use-credentials">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//apex-day-app.github.io">
+    
     <style>
         :root {
             --btn-width: 20px;
@@ -734,14 +740,36 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #666666;
         }
+        
+        /* Loading Shimmer Effect - Fast Load के लिए */
+        .loading-shimmer {
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+            border-radius: 12px;
+            min-height: 80px;
+            margin-bottom: 8px;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
     </style>
 </head>
 <body>
-    <div class="top-bar">
+    <!-- Fast Load के लिए Skeleton Screen -->
+    <div id="skeleton" style="display:block; padding:20px;">
+        <div class="loading-shimmer" style="height:40px; margin-bottom:12px;"></div>
+        <div class="loading-shimmer" style="height:120px;"></div>
+        <div class="loading-shimmer" style="height:120px; margin-top:8px;"></div>
+        <div class="loading-shimmer" style="height:120px; margin-top:8px;"></div>
+    </div>
+
+    <div class="top-bar" id="appContent" style="display:none;">
         <div class="app-title">📒 My Notes</div>
     </div>
-    <div id="foldersList" class="folder-scroll"></div>
-    <div class="app">
+    <div id="foldersList" class="folder-scroll" style="display:none;"></div>
+    <div class="app" style="display:none;" id="appBody">
         <div class="notes-container">
             <div id="notesListArea" class="notes-list"></div>
         </div>
@@ -755,6 +783,18 @@
         </div>
     </div>
     <script>
+        // Fast Load - Skeleton Screen को Hide करें
+        document.addEventListener('DOMContentLoaded', function() {
+            // Skeleton को हटाएं
+            const skeleton = document.getElementById('skeleton');
+            if (skeleton) skeleton.style.display = 'none';
+            
+            // App Content दिखाएं
+            document.getElementById('appContent').style.display = 'block';
+            document.getElementById('foldersList').style.display = 'flex';
+            document.getElementById('appBody').style.display = 'block';
+        });
+
         let folders = [];
         let notes = [];
         let currentFolderId = null;
@@ -1372,7 +1412,7 @@
             }
         });
 
-        // Service Worker Register
+        // Service Worker Register - Fast Load
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
                 .then(() => console.log('✅ Service Worker registered'))
