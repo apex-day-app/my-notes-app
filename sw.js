@@ -5,7 +5,7 @@ const urlsToCache = [
     './manifest.json'
 ];
 
-// Install - सभी Files Cache करें
+// Install - सिर्फ जरूरी Files Cache करें
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -16,7 +16,7 @@ self.addEventListener('install', event => {
     );
 });
 
-// Fetch - पहले Cache से Load करें
+// Fetch - Cache से तुरंत दें
 self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
@@ -26,7 +26,7 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// Activate - पुराना Cache हटाएं
+// Activate - तुरंत Control लें
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -38,6 +38,6 @@ self.addEventListener('activate', event => {
                 })
             );
         })
-        .then(() => self.clients.claim())
+        .then(() => self.clients.claim()) // ← यह तुरंत Control लेता है
     );
 });
